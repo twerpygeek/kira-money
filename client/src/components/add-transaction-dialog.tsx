@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -48,6 +49,7 @@ const formSchema = z.object({
   ),
   category: z.string().min(1, "Category is required"),
   currency: z.enum(currencies),
+  notes: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -55,13 +57,13 @@ type FormData = z.infer<typeof formSchema>;
 interface AddTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddAsset: (data: { name: string; value: number; category: string; currency: Currency }) => Promise<void>;
-  onAddLiability: (data: { name: string; value: number; category: string; currency: Currency }) => Promise<void>;
+  onAddAsset: (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
+  onAddLiability: (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
   baseCurrency: Currency;
   editItem?: Asset | Liability | null;
   editType?: "asset" | "liability";
-  onEditAsset?: (id: string, data: { name: string; value: number; category: string; currency: Currency }) => Promise<void>;
-  onEditLiability?: (id: string, data: { name: string; value: number; category: string; currency: Currency }) => Promise<void>;
+  onEditAsset?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
+  onEditLiability?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
 }
 
 export function AddTransactionDialog({
@@ -85,6 +87,7 @@ export function AddTransactionDialog({
       value: "",
       category: "",
       currency: baseCurrency,
+      notes: "",
     },
   });
 
@@ -100,6 +103,7 @@ export function AddTransactionDialog({
           value: editItem.value.toString(),
           category: editItem.category,
           currency: editItem.currency,
+          notes: editItem.notes || "",
         });
       } else {
         setType("asset");
@@ -108,6 +112,7 @@ export function AddTransactionDialog({
           value: "",
           category: "",
           currency: baseCurrency,
+          notes: "",
         });
       }
     }
@@ -123,6 +128,7 @@ export function AddTransactionDialog({
         value: parseFloat(data.value),
         category: data.category,
         currency: data.currency as Currency,
+        notes: data.notes || undefined,
       };
 
       if (isEditing && editItem) {
@@ -144,6 +150,7 @@ export function AddTransactionDialog({
         value: "",
         category: "",
         currency: baseCurrency,
+        notes: "",
       });
       onOpenChange(false);
     } finally {
@@ -219,11 +226,11 @@ export function AddTransactionDialog({
             </Tabs>
           )}
 
-          <div className="py-10 text-center">
+          <div className="py-8 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
               {type === "asset" ? "Asset Value" : "Liability Amount"}
             </p>
-            <p className={`text-6xl sm:text-7xl font-bold tracking-tight tabular-nums ${
+            <p className={`text-5xl sm:text-6xl font-bold tracking-tight tabular-nums ${
               type === "asset" ? "text-primary" : "text-destructive"
             }`}>
               {formatDisplayValue(watchedValue, watchedCurrency)}
@@ -231,7 +238,7 @@ export function AddTransactionDialog({
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -325,6 +332,26 @@ export function AddTransactionDialog({
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Add any notes or details..."
+                        className="resize-none"
+                        rows={2}
+                        {...field}
+                        data-testid="input-notes"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

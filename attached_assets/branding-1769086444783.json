@@ -1,0 +1,80 @@
+{
+  "colorScheme": "light",
+  "fonts": [
+    {
+      "family": "Plus Jakarta Sans",
+      "count": 63
+    },
+    {
+      "family": "sans-serif",
+      "count": 63
+    }
+  ],
+  "colors": {
+    "primary": "#324C32",
+    "accent": "#19272B",
+    "background": "#FFFFFF",
+    "textPrimary": "#19272B",
+    "link": "#19272B"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "Plus Jakarta Sans",
+      "heading": "Plus Jakarta Sans"
+    },
+    "fontStacks": {
+      "body": [
+        "Plus Jakarta Sans",
+        "sans-serif"
+      ],
+      "heading": [
+        "Plus Jakarta Sans",
+        "sans-serif"
+      ],
+      "paragraph": [
+        "Plus Jakarta Sans",
+        "sans-serif"
+      ]
+    },
+    "fontSizes": {
+      "h1": "70px",
+      "h2": "70px",
+      "body": "20px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 4,
+    "borderRadius": "5px"
+  },
+  "components": {},
+  "images": {
+    "logo": "https://getworthit.com/images/footer-logo.png",
+    "favicon": "https://getworthit.com/images/favicon.png",
+    "ogImage": "https://getworthit.com/images/feature-image.png"
+  },
+  "__framework_hints": [],
+  "__llm_logo_reasoning": {
+    "selectedIndex": 1,
+    "reasoning": "Logo rejected: Red flags detected (UI icon). Heuristic fallback: Moderate indicators: variant bonus (+8), visible, src contains logo, class contains logo, alt contains brand name \"Worth it\", reasonable size, body location without header (penalty). Score: 40. May benefit from LLM validation.",
+    "confidence": 0.5,
+    "rejected": true
+  },
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": -1,
+      "text": "N/A",
+      "reasoning": "LLM failed"
+    },
+    "secondary": {
+      "index": -1,
+      "text": "N/A",
+      "reasoning": "LLM failed"
+    },
+    "confidence": 0
+  },
+  "confidence": {
+    "buttons": 0,
+    "colors": 0,
+    "overall": 0
+  }
+}

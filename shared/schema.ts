@@ -39,6 +39,7 @@ export const assetSchema = z.object({
   value: z.number().min(0, "Value must be positive"),
   category: z.enum(assetCategories),
   currency: z.enum(currencies),
+  notes: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string()
 });
@@ -54,6 +55,7 @@ export const liabilitySchema = z.object({
   value: z.number().min(0, "Value must be positive"),
   category: z.enum(liabilityCategories),
   currency: z.enum(currencies),
+  notes: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string()
 });

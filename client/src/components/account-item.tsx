@@ -93,9 +93,9 @@ export function AccountItem({
       className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 hover-elevate transition-all"
       data-testid={`item-${type}-${item.id}`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
-          className={`p-2.5 rounded-xl ${
+          className={`p-2.5 rounded-xl flex-shrink-0 ${
             isAsset ? "bg-primary/10" : "bg-destructive/10"
           }`}
         >
@@ -105,9 +105,14 @@ export function AccountItem({
             }`}
           />
         </div>
-        <div>
-          <p className="font-medium text-foreground tracking-tight">{item.name}</p>
+        <div className="min-w-0">
+          <p className="font-medium text-foreground tracking-tight truncate">{item.name}</p>
           <p className="text-xs text-muted-foreground">{categoryLabel}</p>
+          {item.notes && (
+            <p className="text-xs text-muted-foreground/70 truncate mt-0.5" data-testid={`text-notes-${item.id}`}>
+              {item.notes}
+            </p>
+          )}
         </div>
       </div>
 

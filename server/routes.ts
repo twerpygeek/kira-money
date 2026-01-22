@@ -164,5 +164,37 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/export", async (_req, res) => {
+    try {
+      const assets = await storage.getAssets();
+      const liabilities = await storage.getLiabilities();
+      const history = await storage.getHistory();
+      const settings = await storage.getSettings();
+
+      let csv = "Type,Name,Value,Category,Currency,Notes,Created,Updated\n";
+      
+      assets.forEach((asset) => {
+        const notes = (asset.notes || "").replace(/"/g, '""');
+        csv += `Asset,"${asset.name}",${asset.value},${asset.category},${asset.currency},"${notes}",${asset.createdAt},${asset.updatedAt}\n`;
+      });
+      
+      liabilities.forEach((liability) => {
+        const notes = (liability.notes || "").replace(/"/g, '""');
+        csv += `Liability,"${liability.name}",${liability.value},${liability.category},${liability.currency},"${notes}",${liability.createdAt},${liability.updatedAt}\n`;
+      });
+
+      csv += "\n\nNet Worth History\nDate,Total Assets,Total Liabilities,Net Worth\n";
+      history.forEach((snapshot) => {
+        csv += `${snapshot.date},${snapshot.totalAssets},${snapshot.totalLiabilities},${snapshot.netWorth}\n`;
+      });
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", `attachment; filename="wealth-tracker-export-${new Date().toISOString().split("T")[0]}.csv"`);
+      res.send(csv);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to export data" });
+    }
+  });
+
   return httpServer;
 }
