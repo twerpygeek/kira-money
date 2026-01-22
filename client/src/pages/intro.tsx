@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Shield,
   Smartphone,
@@ -29,6 +29,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function Intro() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
@@ -74,14 +75,14 @@ export default function Intro() {
               title: "CSV imported successfully!", 
               description: `Added ${result.assets} assets and ${result.liabilities} liabilities` 
             });
-            window.location.href = "/dashboard";
+            setLocation("/dashboard");
           } else {
             toast({ title: "Failed to import CSV", variant: "destructive" });
           }
         } else {
           if (storage.importData(content)) {
             toast({ title: "Data imported successfully!" });
-            window.location.href = "/dashboard";
+            setLocation("/dashboard");
           } else {
             toast({ title: "Failed to import data", variant: "destructive" });
           }
@@ -198,9 +199,9 @@ export default function Intro() {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
               <Link href="/dashboard">
-                <Button size="lg" className="gradient-primary w-full sm:w-auto group" data-testid="button-get-started">
+                <Button size="lg" className="gradient-primary w-full sm:w-auto" data-testid="button-get-started">
                   Get Started
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Button 
@@ -227,13 +228,12 @@ export default function Intro() {
               {features.map((feature, index) => (
                 <Card 
                   key={index} 
-                  className="rounded-2xl border-border/50 transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1" 
+                  className="rounded-2xl border-border/50" 
                   data-testid={`card-feature-${index}`}
-                  style={{ animationDelay: `${0.1 * index}s` }}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-110">
+                      <div className="p-2 rounded-xl bg-primary/10">
                         <feature.icon className="h-6 w-6 text-primary" />
                       </div>
                       <div>
@@ -330,9 +330,9 @@ export default function Intro() {
               Ready to take control of your finances privately?
             </p>
             <Link href="/dashboard">
-              <Button size="lg" className="gradient-primary group" data-testid="button-start-tracking">
+              <Button size="lg" className="gradient-primary" data-testid="button-start-tracking">
                 Start Tracking Now
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </section>

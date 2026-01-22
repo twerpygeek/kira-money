@@ -299,10 +299,6 @@
     background: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(173, 80%, 40%) 100%);
   }
 
-  .gradient-primary:hover {
-    background: linear-gradient(135deg, hsl(160, 84%, 35%) 0%, hsl(173, 80%, 36%) 100%);
-  }
-
   /* Floating animation for background icons */
   @keyframes float {
     0%, 100% {
