@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PrivacyToggle } from "@/components/privacy-toggle";
 import { NetWorthDisplay } from "@/components/net-worth-display";
@@ -22,6 +23,7 @@ import {
   type Settings,
   type Currency,
   convertToBaseCurrency,
+  currencySymbols,
 } from "@shared/schema";
 import {
   Plus,
@@ -29,7 +31,27 @@ import {
   LayoutDashboard,
   Wallet,
   PieChart,
+  Target,
 } from "lucide-react";
+
+function calculateMilestone(netWorth: number): { target: number; progress: number } {
+  const milestones = [10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000, 5000000, 10000000];
+  const target = milestones.find((m) => m > netWorth) || milestones[milestones.length - 1];
+  const previousMilestone = milestones[milestones.indexOf(target) - 1] || 0;
+  const progress = ((netWorth - previousMilestone) / (target - previousMilestone)) * 100;
+  return { target, progress: Math.max(0, Math.min(100, progress)) };
+}
+
+function formatCompact(value: number, currency: Currency): string {
+  const symbol = currencySymbols[currency];
+  if (value >= 1000000) {
+    return `${symbol}${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `${symbol}${(value / 1000).toFixed(0)}K`;
+  }
+  return `${symbol}${value.toFixed(0)}`;
+}
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -69,6 +91,13 @@ export default function Dashboard() {
 
   const netWorth = totalAssets - totalLiabilities;
   const previousNetWorth = history.length > 1 ? history[history.length - 2]?.netWorth : 0;
+  const milestone = calculateMilestone(netWorth);
+
+  const liquidCategories = ["cash", "stocks", "crypto"];
+  const illiquidCategories = ["property", "vehicles", "retirement", "other"];
+
+  const liquidAssets = assets.filter((a) => liquidCategories.includes(a.category));
+  const illiquidAssets = assets.filter((a) => illiquidCategories.includes(a.category));
 
   const addAssetMutation = useMutation({
     mutationFn: async (data: { name: string; value: number; category: string; currency: Currency }) => {
@@ -196,7 +225,7 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-background p-4 scrollbar-hide">
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="flex justify-between items-center">
             <Skeleton className="h-8 w-32" />
@@ -209,33 +238,23 @@ export default function Dashboard() {
             <Skeleton className="h-4 w-24 mb-2" />
             <Skeleton className="h-16 w-64" />
           </div>
-          <Skeleton className="h-48 w-full rounded-lg" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
           <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-24 rounded-lg" />
-            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
           </div>
         </div>
       </div>
     );
   }
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 18) return "Good Afternoon";
-    return "Good Evening";
-  };
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background scrollbar-hide">
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
-        <header className="flex justify-between items-center mb-6">
-          <div>
-            <p className="text-sm text-muted-foreground">{getGreeting()}</p>
-            <h1 className="text-xl font-semibold" data-testid="text-greeting">
-              {userName || "Wealth Tracker"}
-            </h1>
-          </div>
+        <header className="flex justify-between items-center mb-2">
+          <h1 className="text-xl font-semibold tracking-tight" data-testid="text-greeting">
+            {userName || "Wealth Tracker"}
+          </h1>
           <div className="flex items-center gap-1">
             <PrivacyToggle
               isPrivate={isPrivate}
@@ -254,18 +273,30 @@ export default function Dashboard() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="overview" className="flex items-center gap-2" data-testid="tab-overview">
+          <TabsList className="grid w-full grid-cols-3 mb-6 h-12 p-1 rounded-2xl bg-muted/50">
+            <TabsTrigger 
+              value="overview" 
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all" 
+              data-testid="tab-overview"
+            >
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
+              <span className="hidden sm:inline text-sm">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="accounts" className="flex items-center gap-2" data-testid="tab-accounts">
+            <TabsTrigger 
+              value="accounts" 
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all" 
+              data-testid="tab-accounts"
+            >
               <Wallet className="h-4 w-4" />
-              <span className="hidden sm:inline">Accounts</span>
+              <span className="hidden sm:inline text-sm">Accounts</span>
             </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center gap-2" data-testid="tab-insights">
+            <TabsTrigger 
+              value="insights" 
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all" 
+              data-testid="tab-insights"
+            >
               <PieChart className="h-4 w-4" />
-              <span className="hidden sm:inline">Insights</span>
+              <span className="hidden sm:inline text-sm">Insights</span>
             </TabsTrigger>
           </TabsList>
 
@@ -275,11 +306,31 @@ export default function Dashboard() {
               previousNetWorth={previousNetWorth}
               baseCurrency={baseCurrency}
               isPrivate={isPrivate}
+              history={history}
+              userName={userName}
             />
 
-            <Card className="bg-card">
+            <Card className="rounded-2xl border-border/50" data-testid="card-milestone">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Next Milestone</span>
+                  </div>
+                  <span className={`text-sm font-semibold text-primary tabular-nums ${isPrivate ? "privacy-blur" : ""}`}>
+                    {milestone.progress.toFixed(0)}%
+                  </span>
+                </div>
+                <Progress value={milestone.progress} className="h-2 mb-2" />
+                <p className={`text-xs text-muted-foreground ${isPrivate ? "privacy-blur" : ""}`}>
+                  {formatCompact(netWorth, baseCurrency)} of {formatCompact(milestone.target, baseCurrency)}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Net Worth History</CardTitle>
+                <CardTitle className="text-base font-semibold tracking-tight">Net Worth History</CardTitle>
               </CardHeader>
               <CardContent>
                 <NetWorthChart
@@ -300,14 +351,14 @@ export default function Dashboard() {
 
           <TabsContent value="accounts" className="space-y-6">
             {assets.length === 0 && liabilities.length === 0 ? (
-              <Card>
+              <Card className="rounded-2xl">
                 <CardContent className="py-12 text-center">
                   <Wallet className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No accounts yet</h3>
                   <p className="text-muted-foreground mb-4">
                     Add your first asset or liability to start tracking your net worth
                   </p>
-                  <Button onClick={() => setAddDialogOpen(true)} data-testid="button-add-first">
+                  <Button onClick={() => setAddDialogOpen(true)} className="gradient-primary" data-testid="button-add-first">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Account
                   </Button>
@@ -315,14 +366,36 @@ export default function Dashboard() {
               </Card>
             ) : (
               <>
-                {assets.length > 0 && (
+                {liquidAssets.length > 0 && (
                   <div className="space-y-3">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary" />
-                      Assets ({assets.length})
+                    <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      Liquid Assets
                     </h2>
                     <div className="space-y-2">
-                      {assets.map((asset) => (
+                      {liquidAssets.map((asset) => (
+                        <AccountItem
+                          key={asset.id}
+                          item={asset}
+                          type="asset"
+                          baseCurrency={baseCurrency}
+                          isPrivate={isPrivate}
+                          onEdit={() => handleEdit(asset, "asset")}
+                          onDelete={() => deleteAssetMutation.mutate(asset.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {illiquidAssets.length > 0 && (
+                  <div className="space-y-3">
+                    <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-chart-3" />
+                      Illiquid Assets
+                    </h2>
+                    <div className="space-y-2">
+                      {illiquidAssets.map((asset) => (
                         <AccountItem
                           key={asset.id}
                           item={asset}
@@ -339,9 +412,9 @@ export default function Dashboard() {
 
                 {liabilities.length > 0 && (
                   <div className="space-y-3">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      Liabilities ({liabilities.length})
+                    <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                      Liabilities
                     </h2>
                     <div className="space-y-2">
                       {liabilities.map((liability) => (
@@ -356,6 +429,25 @@ export default function Dashboard() {
                         />
                       ))}
                     </div>
+
+                    <Card className="rounded-2xl border-border/50 mt-4">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">Debt-to-Asset Ratio</span>
+                          <span className={`text-sm font-semibold tabular-nums ${
+                            totalAssets > 0 && (totalLiabilities / totalAssets) > 0.5 
+                              ? "text-destructive" 
+                              : "text-primary"
+                          } ${isPrivate ? "privacy-blur" : ""}`}>
+                            {totalAssets > 0 ? ((totalLiabilities / totalAssets) * 100).toFixed(1) : 0}%
+                          </span>
+                        </div>
+                        <Progress 
+                          value={totalAssets > 0 ? Math.min((totalLiabilities / totalAssets) * 100, 100) : 0} 
+                          className="h-2"
+                        />
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
               </>
@@ -369,30 +461,30 @@ export default function Dashboard() {
               isPrivate={isPrivate}
             />
 
-            <Card>
+            <Card className="rounded-2xl border-border/50">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Summary Stats</CardTitle>
+                <CardTitle className="text-base font-semibold tracking-tight">Summary Stats</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted-foreground">Total Accounts</span>
-                  <span className="font-medium">{assets.length + liabilities.length}</span>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Total Accounts</span>
+                  <span className="font-medium tabular-nums">{assets.length + liabilities.length}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted-foreground">Asset Categories</span>
-                  <span className="font-medium">
-                    {new Set(assets.map((a) => a.category)).size}
-                  </span>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Liquid Assets</span>
+                  <span className="font-medium tabular-nums">{liquidAssets.length}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted-foreground">Liability Categories</span>
-                  <span className="font-medium">
-                    {new Set(liabilities.map((l) => l.category)).size}
-                  </span>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Illiquid Assets</span>
+                  <span className="font-medium tabular-nums">{illiquidAssets.length}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Total Liabilities</span>
+                  <span className="font-medium tabular-nums">{liabilities.length}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-muted-foreground">History Snapshots</span>
-                  <span className="font-medium">{history.length}</span>
+                  <span className="text-sm text-muted-foreground">History Snapshots</span>
+                  <span className="font-medium tabular-nums">{history.length}</span>
                 </div>
               </CardContent>
             </Card>
@@ -402,8 +494,8 @@ export default function Dashboard() {
 
       <div className="fixed bottom-6 right-6">
         <Button
-          size="lg"
-          className="h-14 w-14 rounded-full shadow-lg"
+          size="icon"
+          className="w-14 rounded-full shadow-lg gradient-primary"
           onClick={() => setAddDialogOpen(true)}
           data-testid="button-add"
         >

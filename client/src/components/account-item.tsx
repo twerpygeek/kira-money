@@ -90,12 +90,12 @@ export function AccountItem({
 
   return (
     <div
-      className="flex items-center justify-between py-3 px-4 rounded-lg bg-card border border-border hover-elevate transition-colors"
+      className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 hover-elevate transition-all"
       data-testid={`item-${type}-${item.id}`}
     >
       <div className="flex items-center gap-3">
         <div
-          className={`p-2 rounded-lg ${
+          className={`p-2.5 rounded-xl ${
             isAsset ? "bg-primary/10" : "bg-destructive/10"
           }`}
         >
@@ -106,15 +106,15 @@ export function AccountItem({
           />
         </div>
         <div>
-          <p className="font-medium text-foreground">{item.name}</p>
-          <p className="text-sm text-muted-foreground">{categoryLabel}</p>
+          <p className="font-medium text-foreground tracking-tight">{item.name}</p>
+          <p className="text-xs text-muted-foreground">{categoryLabel}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         <div className="text-right">
           <p
-            className={`font-semibold ${
+            className={`font-semibold tabular-nums ${
               isAsset ? "text-primary" : "text-destructive"
             } ${isPrivate ? "privacy-blur" : ""}`}
           >
@@ -122,7 +122,7 @@ export function AccountItem({
             {formatCurrency(convertedValue, baseCurrency)}
           </p>
           {showConversion && (
-            <p className={`text-xs text-muted-foreground ${isPrivate ? "privacy-blur" : ""}`}>
+            <p className={`text-xs text-muted-foreground tabular-nums ${isPrivate ? "privacy-blur" : ""}`}>
               {formatCurrency(item.value, item.currency)}
             </p>
           )}
@@ -134,7 +134,7 @@ export function AccountItem({
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="rounded-xl">
             <DropdownMenuItem onClick={onEdit} data-testid={`button-edit-${item.id}`}>
               <Pencil className="h-4 w-4 mr-2" />
               Edit

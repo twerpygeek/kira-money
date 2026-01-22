@@ -24,22 +24,18 @@ export function SummaryCards({
   baseCurrency,
   isPrivate,
 }: SummaryCardsProps) {
-  const debtToAssetRatio = totalAssets > 0 
-    ? ((totalLiabilities / totalAssets) * 100).toFixed(1) 
-    : "0";
-
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Card className="border-l-4 border-l-primary bg-card">
-        <CardContent className="pt-5 pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-1.5 rounded-md bg-primary/10">
+      <Card className="rounded-2xl border-border/50 bg-card overflow-hidden">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-primary/10">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
-            <span className="text-sm text-muted-foreground">Assets</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Assets</span>
           </div>
           <p
-            className={`text-2xl font-bold text-primary number-animate ${
+            className={`text-2xl font-bold text-primary tabular-nums tracking-tight ${
               isPrivate ? "privacy-blur" : ""
             }`}
             data-testid="text-total-assets"
@@ -49,16 +45,16 @@ export function SummaryCards({
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-destructive bg-card">
-        <CardContent className="pt-5 pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-1.5 rounded-md bg-destructive/10">
+      <Card className="rounded-2xl border-border/50 bg-card overflow-hidden">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-destructive/10">
               <TrendingDown className="h-4 w-4 text-destructive" />
             </div>
-            <span className="text-sm text-muted-foreground">Liabilities</span>
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">Liabilities</span>
           </div>
           <p
-            className={`text-2xl font-bold text-destructive number-animate ${
+            className={`text-2xl font-bold text-destructive tabular-nums tracking-tight ${
               isPrivate ? "privacy-blur" : ""
             }`}
             data-testid="text-total-liabilities"
@@ -67,24 +63,6 @@ export function SummaryCards({
           </p>
         </CardContent>
       </Card>
-
-      {totalAssets > 0 && (
-        <Card className="col-span-2 bg-card">
-          <CardContent className="pt-4 pb-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Debt-to-Asset Ratio</span>
-              <span
-                className={`text-sm font-medium ${
-                  parseFloat(debtToAssetRatio) > 50 ? "text-destructive" : "text-primary"
-                } ${isPrivate ? "privacy-blur" : ""}`}
-                data-testid="text-debt-ratio"
-              >
-                {debtToAssetRatio}%
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

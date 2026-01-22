@@ -32,13 +32,13 @@ export function NetWorthChart({
 }: NetWorthChartProps) {
   const chartData = history.map((snapshot) => ({
     ...snapshot,
-    displayDate: format(parseISO(snapshot.date), "MMM yyyy"),
+    displayDate: format(parseISO(snapshot.date), "MMM"),
   }));
 
   if (chartData.length === 0) {
     return (
       <div className="h-48 flex items-center justify-center text-muted-foreground">
-        <p>Add assets and liabilities to see your net worth history</p>
+        <p className="text-sm">Add assets and liabilities to see your net worth history</p>
       </div>
     );
   }
@@ -52,7 +52,7 @@ export function NetWorthChart({
         >
           <defs>
             <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.4} />
+              <stop offset="0%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0.3} />
               <stop offset="100%" stopColor="hsl(160, 84%, 39%)" stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -60,24 +60,24 @@ export function NetWorthChart({
             dataKey="displayDate"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
             dy={10}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
             tickFormatter={(value) => formatCompactCurrency(value, baseCurrency)}
-            width={60}
+            width={55}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: "hsl(var(--card))",
               border: "1px solid hsl(var(--border))",
-              borderRadius: "8px",
+              borderRadius: "12px",
               boxShadow: "var(--shadow-lg)",
             }}
-            labelStyle={{ color: "hsl(var(--foreground))" }}
+            labelStyle={{ color: "hsl(var(--foreground))", fontSize: 12 }}
             formatter={(value: number) => [
               `${currencySymbols[baseCurrency]}${value.toLocaleString()}`,
               "Net Worth",

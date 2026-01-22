@@ -46,7 +46,7 @@
   --accent: 214 20% 92%;
   --accent-foreground: 222 47% 11%;
 
-  --destructive: 0 84% 60%;
+  --destructive: 350 89% 60%;
   --destructive-foreground: 0 0% 100%;
 
   --input: 214 20% 85%;
@@ -56,12 +56,12 @@
   --chart-2: 45 93% 58%;
   --chart-3: 199 89% 48%;
   --chart-4: 280 65% 60%;
-  --chart-5: 0 84% 60%;
+  --chart-5: 350 89% 60%;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'JetBrains Mono', Menlo, monospace;
-  --radius: .75rem;
+  --radius: 1rem;
   --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
   --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.1);
   --shadow-sm: 0px 1px 3px 0px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
@@ -95,7 +95,7 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/* DARK MODE - Primary design inspired by Worth It app */
+/* DARK MODE - Premium Fintech Design (Rich Navy #0F172A) */
 .dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
@@ -105,51 +105,57 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 222 47% 6%;
-  --foreground: 210 20% 98%;
+  /* Rich Navy Background #0F172A */
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
 
-  --border: 217 33% 17%;
+  /* Slate Border #334155 */
+  --border: 217 19% 27%;
 
-  --card: 222 47% 9%;
-  --card-foreground: 210 20% 98%;
-  --card-border: 217 33% 17%;
+  /* Card Background #1E293B */
+  --card: 217 33% 17%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 217 19% 27%;
 
-  --sidebar: 222 47% 8%;
-  --sidebar-foreground: 210 20% 98%;
-  --sidebar-border: 217 33% 17%;
+  --sidebar: 222 47% 9%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 217 19% 27%;
   --sidebar-primary: 160 84% 39%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 210 20% 98%;
+  --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-ring: 160 84% 39%;
 
-  --popover: 222 47% 9%;
-  --popover-foreground: 210 20% 98%;
-  --popover-border: 217 33% 17%;
+  --popover: 217 33% 17%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 217 19% 27%;
 
+  /* Emerald Primary #10B981 */
   --primary: 160 84% 39%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 217 33% 17%;
-  --secondary-foreground: 210 20% 98%;
+  --secondary-foreground: 210 40% 98%;
 
   --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 55%;
+  /* Blue-gray muted text #94A3B8 */
+  --muted-foreground: 215 20% 65%;
 
   --accent: 217 33% 17%;
-  --accent-foreground: 210 20% 98%;
+  --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 84% 60%;
+  /* Soft Rose #F43F5E for destructive/debt */
+  --destructive: 350 89% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 217 33% 22%;
+  --input: 217 19% 27%;
   --ring: 160 84% 39%;
   
   --chart-1: 160 84% 39%;
   --chart-2: 45 93% 58%;
   --chart-3: 199 89% 48%;
   --chart-4: 280 65% 60%;
-  --chart-5: 0 84% 60%;
+  --chart-5: 350 89% 60%;
 
   --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.3);
   --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.4);
@@ -168,6 +174,15 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Hide scrollbars for cleaner look */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -245,10 +260,46 @@
   .privacy-blur {
     filter: blur(8px);
     user-select: none;
+    transition: filter 0.3s ease;
+  }
+  
+  /* Tabular numbers for financial data alignment */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
   
   /* Smooth number transitions */
   .number-animate {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Tracking tight for headers */
+  .tracking-tight {
+    letter-spacing: -0.025em;
+  }
+
+  /* Fade in animation */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Gradient button for primary actions */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(173, 80%, 40%) 100%);
+  }
+
+  .gradient-primary:hover {
+    background: linear-gradient(135deg, hsl(160, 84%, 35%) 0%, hsl(173, 80%, 36%) 100%);
   }
 }

@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,11 +33,12 @@ import {
   currencies,
   assetCategoryLabels,
   liabilityCategoryLabels,
+  currencySymbols,
   type Currency,
   type Asset,
   type Liability,
 } from "@shared/schema";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -85,6 +87,9 @@ export function AddTransactionDialog({
       currency: baseCurrency,
     },
   });
+
+  const watchedValue = form.watch("value");
+  const watchedCurrency = form.watch("currency");
 
   useEffect(() => {
     if (open) {
@@ -149,70 +154,147 @@ export function AddTransactionDialog({
   const currentCategories = type === "asset" ? assetCategories : liabilityCategories;
   const categoryLabels = type === "asset" ? assetCategoryLabels : liabilityCategoryLabels;
 
+  const formatDisplayValue = (val: string, currency: Currency): string => {
+    if (!val) return currencySymbols[currency] + "0";
+    const num = parseFloat(val);
+    if (isNaN(num)) return currencySymbols[currency] + "0";
+    return currencySymbols[currency] + num.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="w-full h-full max-w-none sm:max-w-lg sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-2xl p-0 gap-0">
+        <DialogHeader className="sr-only">
           <DialogTitle>
             {isEditing ? "Edit" : "Add"} {type === "asset" ? "Asset" : "Liability"}
           </DialogTitle>
+          <DialogDescription>
+            Enter the details for your {type === "asset" ? "asset" : "liability"}
+          </DialogDescription>
         </DialogHeader>
 
-        {!isEditing && (
-          <Tabs
-            value={type}
-            onValueChange={(v) => {
-              setType(v as "asset" | "liability");
-              form.setValue("category", "");
-            }}
-            className="w-full"
+        <div className="sticky top-0 z-10 bg-card border-b border-border p-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">
+            {isEditing ? "Edit" : "Add"} {type === "asset" ? "Asset" : "Liability"}
+          </h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            data-testid="button-close-dialog"
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="asset" data-testid="tab-asset" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Asset
-              </TabsTrigger>
-              <TabsTrigger value="liability" data-testid="tab-liability" className="data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground">
-                Liability
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        )}
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={type === "asset" ? "e.g., Savings Account" : "e.g., Credit Card"}
-                      {...field}
-                      data-testid="input-name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {!isEditing && (
+            <Tabs
+              value={type}
+              onValueChange={(v) => {
+                setType(v as "asset" | "liability");
+                form.setValue("category", "");
+              }}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 p-1 rounded-2xl">
+                <TabsTrigger 
+                  value="asset" 
+                  data-testid="tab-asset" 
+                  className="rounded-xl text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+                >
+                  Asset
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="liability" 
+                  data-testid="tab-liability" 
+                  className="rounded-xl text-sm font-medium data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground transition-all"
+                >
+                  Liability
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
 
-            <div className="grid grid-cols-2 gap-4">
+          <div className="py-10 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
+              {type === "asset" ? "Asset Value" : "Liability Amount"}
+            </p>
+            <p className={`text-6xl sm:text-7xl font-bold tracking-tight tabular-nums ${
+              type === "asset" ? "text-primary" : "text-destructive"
+            }`}>
+              {formatDisplayValue(watchedValue, watchedCurrency)}
+            </p>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Value</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          className="text-lg tabular-nums"
+                          {...field}
+                          data-testid="input-value"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Currency</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-currency">
+                            <SelectValue placeholder="Currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map((currency) => (
+                            <SelectItem key={currency} value={currency}>
+                              {currencySymbols[currency]} {currency}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="value"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Value</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Name</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0.00"
+                        placeholder={type === "asset" ? "e.g., Savings Account" : "e.g., Credit Card"}
                         {...field}
-                        data-testid="input-value"
+                        data-testid="input-name"
                       />
                     </FormControl>
                     <FormMessage />
@@ -222,23 +304,23 @@ export function AddTransactionDialog({
 
               <FormField
                 control={form.control}
-                name="currency"
+                name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Currency</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Category</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger data-testid="select-currency">
-                          <SelectValue placeholder="Currency" />
+                        <SelectTrigger data-testid="select-category">
+                          <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {currencies.map((currency) => (
-                          <SelectItem key={currency} value={currency}>
-                            {currency}
+                        {currentCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {categoryLabels[category as keyof typeof categoryLabels]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -247,53 +329,26 @@ export function AddTransactionDialog({
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger data-testid="select-category">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {currentCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {categoryLabels[category as keyof typeof categoryLabels]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-              data-testid="button-submit"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isEditing ? "Saving..." : "Adding..."}
-                </>
-              ) : (
-                isEditing ? "Save Changes" : `Add ${type === "asset" ? "Asset" : "Liability"}`
-              )}
-            </Button>
-          </form>
-        </Form>
+              <Button
+                type="submit"
+                size="lg"
+                className={`w-full ${type === "asset" ? "gradient-primary" : "bg-destructive"}`}
+                disabled={isSubmitting}
+                data-testid="button-submit"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    {isEditing ? "Saving..." : "Adding..."}
+                  </>
+                ) : (
+                  isEditing ? "Save Changes" : `Add ${type === "asset" ? "Asset" : "Liability"}`
+                )}
+              </Button>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );

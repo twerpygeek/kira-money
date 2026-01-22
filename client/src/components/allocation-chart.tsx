@@ -29,16 +29,16 @@ const COLORS = [
 export function AllocationChart({ assets, baseCurrency, isPrivate }: AllocationChartProps) {
   if (assets.length === 0) {
     return (
-      <Card>
+      <Card className="rounded-2xl border-border/50">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <PieChartIcon className="h-5 w-5 text-primary" />
+          <CardTitle className="text-base font-semibold tracking-tight flex items-center gap-2">
+            <PieChartIcon className="h-4 w-4 text-primary" />
             Asset Allocation
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-48 flex items-center justify-center text-muted-foreground">
-            <p>Add assets to see allocation breakdown</p>
+            <p className="text-sm">Add assets to see allocation breakdown</p>
           </div>
         </CardContent>
       </Card>
@@ -65,12 +65,12 @@ export function AllocationChart({ assets, baseCurrency, isPrivate }: AllocationC
       const data = payload[0].payload;
       const percentage = ((data.value / totalValue) * 100).toFixed(1);
       return (
-        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-          <p className="font-medium">{data.name}</p>
-          <p className={`text-sm ${isPrivate ? "privacy-blur" : ""}`}>
+        <div className="bg-popover border border-border rounded-xl p-3 shadow-lg">
+          <p className="font-medium text-sm">{data.name}</p>
+          <p className={`text-sm tabular-nums ${isPrivate ? "privacy-blur" : ""}`}>
             {currencySymbols[baseCurrency]}{data.value.toLocaleString()}
           </p>
-          <p className="text-sm text-muted-foreground">{percentage}%</p>
+          <p className="text-xs text-muted-foreground tabular-nums">{percentage}%</p>
         </div>
       );
     }
@@ -84,13 +84,13 @@ export function AllocationChart({ assets, baseCurrency, isPrivate }: AllocationC
         {payload.map((entry: any, index: number) => {
           const percentage = ((entry.payload.value / totalValue) * 100).toFixed(0);
           return (
-            <li key={`legend-${index}`} className="flex items-center gap-1.5 text-sm">
+            <li key={`legend-${index}`} className="flex items-center gap-1.5 text-xs">
               <span
-                className="w-3 h-3 rounded-full"
+                className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: entry.color }}
               />
               <span className="text-muted-foreground">{entry.value}</span>
-              <span className={`font-medium ${isPrivate ? "privacy-blur" : ""}`}>
+              <span className={`font-medium tabular-nums ${isPrivate ? "privacy-blur" : ""}`}>
                 {percentage}%
               </span>
             </li>
@@ -101,10 +101,10 @@ export function AllocationChart({ assets, baseCurrency, isPrivate }: AllocationC
   };
 
   return (
-    <Card data-testid="card-allocation">
+    <Card className="rounded-2xl border-border/50" data-testid="card-allocation">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <PieChartIcon className="h-5 w-5 text-primary" />
+        <CardTitle className="text-base font-semibold tracking-tight flex items-center gap-2">
+          <PieChartIcon className="h-4 w-4 text-primary" />
           Asset Allocation
         </CardTitle>
       </CardHeader>
@@ -116,9 +116,9 @@ export function AllocationChart({ assets, baseCurrency, isPrivate }: AllocationC
                 data={chartData}
                 cx="50%"
                 cy="45%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={2}
+                innerRadius={55}
+                outerRadius={85}
+                paddingAngle={3}
                 dataKey="value"
               >
                 {chartData.map((_, index) => (
