@@ -10,6 +10,7 @@ import {
   ArrowRight,
   HelpCircle,
   CheckCircle2,
+  Download,
 } from "lucide-react";
 import kiraLogo from "@assets/image_1769091105203.png";
 
@@ -139,6 +140,38 @@ export default function Intro() {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="max-w-2xl mx-auto py-12">
+          <Card className="rounded-2xl border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-primary/20">
+                  <Smartphone className="h-6 w-6 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight">Install KIRA on Your Device</h2>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Add KIRA to your home screen for quick access - it works just like a native app!
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-background/50" data-testid="install-quick-ios">
+                  <p className="font-medium text-sm mb-1">iPhone / iPad</p>
+                  <p className="text-xs text-muted-foreground">Tap Share, then "Add to Home Screen"</p>
+                </div>
+                <div className="p-3 rounded-xl bg-background/50" data-testid="install-quick-android">
+                  <p className="font-medium text-sm mb-1">Android</p>
+                  <p className="text-xs text-muted-foreground">Tap menu, then "Install app"</p>
+                </div>
+              </div>
+              <Link href="/faq">
+                <Button variant="outline" size="sm" data-testid="link-detailed-instructions">
+                  See detailed instructions
+                  <ArrowRight className="ml-2 h-3 w-3" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </section>
