@@ -78,8 +78,25 @@ shared/
 USD, EUR, GBP, JPY, CNY, SGD, MYR, AUD, CAD, CHF, INR
 
 ## Design
-- Dark theme primary with light mode option
-- Primary color: Green (hsl 160 84% 39%) for wealth/assets
-- Destructive color: Red for liabilities
-- Apple-style minimalism with clean typography
-- Large numbers, rounded cards, subtle shadows
+- **Premium Fintech Aesthetic**: Apple Wallet/Robinhood-inspired UI
+- **Dark theme primary**: Rich navy background (#0F172A), slate cards (#1E293B)
+- **Primary color**: Emerald-to-teal gradient (hsl 160 84% 39%) for wealth/assets
+- **Destructive color**: Soft rose (#F43F5E) for liabilities - less harsh than pure red
+- **Typography**: Inter font with tracking-tight headers, tabular-nums for all financial values
+- **Cards**: rounded-2xl with subtle border-border/50
+- **Gradient Button**: gradient-primary class for emerald-to-teal gradient CTA buttons
+
+## Key Features
+- **Massive Net Worth Display**: text-6xl hero display with sparkline trend behind
+- **Milestone Progress**: Gamified progress tracking to next financial goal ($10K, $25K, $50K, etc.)
+- **Asset Grouping**: Liquid Assets (cash, stocks, crypto) vs Illiquid Assets (property, retirement)
+- **Debt-to-Asset Ratio**: Progress bar showing financial health
+- **Full-Screen Add Modal**: Calculator-style input on mobile, constrained on desktop
+- **Privacy Mode**: Blur sensitive financial data with privacy-blur CSS class
+
+## Recent Changes (Jan 2026)
+- Premium UI overhaul with rich navy/slate color palette
+- Added milestone tracking with gamification
+- Implemented asset grouping (liquid/illiquid)
+- Full-screen mobile modal with calculator-style input
+- Enhanced visual hierarchy with tabular-nums and tracking-tight
