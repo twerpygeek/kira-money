@@ -189,7 +189,7 @@ export async function registerRoutes(
       });
 
       res.setHeader("Content-Type", "text/csv");
-      res.setHeader("Content-Disposition", `attachment; filename="wealth-tracker-export-${new Date().toISOString().split("T")[0]}.csv"`);
+      res.setHeader("Content-Disposition", `attachment; filename="kira-export-${new Date().toISOString().split("T")[0]}.csv"`);
       res.send(csv);
     } catch (error) {
       res.status(500).json({ error: "Failed to export data" });

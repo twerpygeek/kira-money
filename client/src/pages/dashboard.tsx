@@ -33,6 +33,7 @@ import {
   PieChart,
   Target,
 } from "lucide-react";
+import kiraLogo from "@assets/Kira_money_1769089620127.jpg";
 
 function calculateMilestone(netWorth: number): { target: number; progress: number } {
   const milestones = [10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000, 5000000, 10000000];
@@ -252,9 +253,12 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background scrollbar-hide">
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
         <header className="flex justify-between items-center mb-2">
-          <h1 className="text-xl font-semibold tracking-tight" data-testid="text-greeting">
-            {userName || "Wealth Tracker"}
-          </h1>
+          <div className="flex items-center gap-2" data-testid="text-greeting">
+            <img src={kiraLogo} alt="KIRA" className="w-8 h-8 rounded-lg" />
+            <h1 className="text-xl font-bold tracking-tight">
+              {userName || "KIRA"}
+            </h1>
+          </div>
           <div className="flex items-center gap-1">
             <PrivacyToggle
               isPrivate={isPrivate}

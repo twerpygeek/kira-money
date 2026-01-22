@@ -64,7 +64,7 @@ export function SettingsDialog({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `wealth-tracker-export-${new Date().toISOString().split("T")[0]}.csv`;
+      a.download = `kira-export-${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -84,7 +84,7 @@ export function SettingsDialog({
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold tracking-tight">Settings</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Customize your wealth tracker preferences
+            Customize your KIRA preferences
           </DialogDescription>
         </DialogHeader>
 

@@ -1,7 +1,16 @@
-# Wealth Tracker - Net Worth Tracker
+# KIRA - Net Worth Tracker
 
 ## Overview
-A privacy-first, manual-entry net worth tracker inspired by "Worth It" app. Track your assets and liabilities to see your complete financial picture with beautiful visualizations and multi-currency support.
+KIRA is a privacy-first, manual-entry net worth tracker inspired by "Worth It" app. Track your assets and liabilities to see your complete financial picture with beautiful visualizations and multi-currency support.
+
+## Branding
+- **App Name**: KIRA / Kira Money
+- **Logo**: Kira_money_1769089620127.jpg (K arrow logo)
+- **Deep Slate (BG)**: #0F172A
+- **Lighter Slate (Card)**: #1E2938
+- **Wealth Green (Primary)**: #10B981
+- **Debt Rose (Negative)**: #F43F5E
+- **Crisp White (Text)**: #F8FAFC
 
 ## Features
 - **Net Worth Dashboard**: Large, prominent display of total net worth with percentage change
