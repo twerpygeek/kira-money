@@ -68,8 +68,8 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex justify-between items-center p-4 max-w-4xl mx-auto">
-        <div className="flex items-center gap-2">
+      <header className="flex justify-between items-center gap-4 p-4 max-w-4xl mx-auto">
+        <div className="flex items-center gap-2" data-testid="logo-header">
           <img src={kiraLogo} alt="KIRA" className="w-8 h-8 rounded-lg" />
           <span className="font-bold text-lg tracking-tight">KIRA</span>
         </div>
@@ -105,7 +105,7 @@ export default function FAQ() {
             </p>
             
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-muted/50">
+              <div className="p-4 rounded-xl bg-muted/50" data-testid="install-ios">
                 <h4 className="font-medium mb-2">iPhone / iPad (Safari)</h4>
                 <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                   <li>Tap the Share button (square with arrow)</li>
@@ -114,7 +114,7 @@ export default function FAQ() {
                 </ol>
               </div>
               
-              <div className="p-4 rounded-xl bg-muted/50">
+              <div className="p-4 rounded-xl bg-muted/50" data-testid="install-android">
                 <h4 className="font-medium mb-2">Android (Chrome)</h4>
                 <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                   <li>Tap the menu button (three dots)</li>
@@ -123,7 +123,7 @@ export default function FAQ() {
                 </ol>
               </div>
               
-              <div className="p-4 rounded-xl bg-muted/50">
+              <div className="p-4 rounded-xl bg-muted/50" data-testid="install-desktop">
                 <h4 className="font-medium mb-2">Desktop (Chrome/Edge)</h4>
                 <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                   <li>Click the install icon in the address bar (or menu)</li>
@@ -147,8 +147,9 @@ export default function FAQ() {
                 key={index}
                 value={`item-${index}`}
                 className="border border-border/50 rounded-xl px-4 data-[state=open]:bg-muted/30"
+                data-testid={`faq-item-${index}`}
               >
-                <AccordionTrigger className="hover:no-underline py-4">
+                <AccordionTrigger className="py-4" data-testid={`faq-trigger-${index}`}>
                   <div className="flex items-center gap-3 text-left">
                     <faq.icon className="h-5 w-5 text-primary shrink-0" />
                     <span className="font-medium">{faq.question}</span>

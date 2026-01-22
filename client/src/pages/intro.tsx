@@ -39,8 +39,8 @@ export default function Intro() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex justify-between items-center p-4 max-w-4xl mx-auto">
-        <div className="flex items-center gap-2">
+      <header className="flex justify-between items-center gap-4 p-4 max-w-4xl mx-auto">
+        <div className="flex items-center gap-2" data-testid="logo-header">
           <img src={kiraLogo} alt="KIRA" className="w-8 h-8 rounded-lg" />
           <span className="font-bold text-lg tracking-tight">KIRA</span>
         </div>
@@ -94,7 +94,7 @@ export default function Intro() {
           
           <div className="grid md:grid-cols-2 gap-4">
             {features.map((feature, index) => (
-              <Card key={index} className="rounded-2xl border-border/50">
+              <Card key={index} className="rounded-2xl border-border/50" data-testid={`card-feature-${index}`}>
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="p-2 rounded-xl bg-primary/10">

@@ -47,18 +47,29 @@ client/
 │   │   ├── add-transaction-dialog.tsx
 │   │   ├── allocation-chart.tsx
 │   │   └── settings-dialog.tsx
+│   ├── lib/
+│   │   └── localStorage.ts  # Local storage CRUD utilities
 │   ├── pages/
-│   │   ├── dashboard.tsx    # Main dashboard page
+│   │   ├── intro.tsx        # Landing page (/)
+│   │   ├── dashboard.tsx    # Main dashboard (/dashboard)
+│   │   ├── faq.tsx          # FAQ & help page (/faq)
 │   │   └── not-found.tsx
 │   ├── App.tsx
 │   └── index.css            # Tailwind + theme variables
+├── public/
+│   └── manifest.json        # PWA manifest
 server/
-├── routes.ts                # API endpoints
-├── storage.ts               # In-memory data storage
+├── routes.ts                # Static file serving
+├── storage.ts               # (Legacy - not used)
 └── index.ts                 # Express server setup
 shared/
 └── schema.ts                # Data models, types, utilities
 ```
+
+## Routes
+- `/` - Intro/landing page explaining privacy-first approach
+- `/dashboard` - Main net worth tracker
+- `/faq` - FAQ, privacy info, and PWA install instructions
 
 ## Data Storage (localStorage)
 All data is stored locally in the user's browser for maximum privacy:
