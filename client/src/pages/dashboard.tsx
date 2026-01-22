@@ -468,6 +468,7 @@ export default function Dashboard() {
         settings={settings}
         onSave={handleSaveSettings}
         onClearData={handleClearAllData}
+        onDataRestored={refreshData}
       />
     </div>
   );

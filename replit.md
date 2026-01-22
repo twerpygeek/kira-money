@@ -26,10 +26,10 @@ KIRA is a privacy-first, manual-entry net worth tracker inspired by "Worth It" a
 - **Frontend**: React + TypeScript + Vite
 - **Styling**: Tailwind CSS + Shadcn UI components
 - **Charts**: Recharts
-- **State Management**: TanStack React Query
+- **State Management**: React useState/useEffect (local state)
 - **Routing**: Wouter
-- **Backend**: Express.js
-- **Data Storage**: In-memory storage (MemStorage)
+- **Backend**: Express.js (for serving static files only)
+- **Data Storage**: Browser localStorage (privacy-first, data stays on device)
 
 ## Project Structure
 ```
@@ -60,18 +60,17 @@ shared/
 └── schema.ts                # Data models, types, utilities
 ```
 
-## API Endpoints
-- `GET /api/settings` - Get user settings
-- `PATCH /api/settings` - Update settings
-- `GET /api/assets` - Get all assets
-- `POST /api/assets` - Create asset
-- `PATCH /api/assets/:id` - Update asset
-- `DELETE /api/assets/:id` - Delete asset
-- `GET /api/liabilities` - Get all liabilities
-- `POST /api/liabilities` - Create liability
-- `PATCH /api/liabilities/:id` - Update liability
-- `DELETE /api/liabilities/:id` - Delete liability
-- `GET /api/history` - Get net worth history
+## Data Storage (localStorage)
+All data is stored locally in the user's browser for maximum privacy:
+- `kira_assets` - Array of asset objects
+- `kira_liabilities` - Array of liability objects
+- `kira_settings` - User settings (baseCurrency, privacyMode, userName)
+- `kira_history` - Net worth history snapshots
+
+### Data Management Features
+- **Backup Data**: Download all data as JSON file
+- **Restore Data**: Upload JSON backup to restore
+- **Clear All Data**: Delete all local data (with confirmation)
 
 ## Data Models
 ### Asset

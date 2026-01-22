@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { currencies, currencySymbols, type Currency, type Settings } from "@shared/schema";
 import { storage } from "@/lib/localStorage";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Download, Upload, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,6 +39,7 @@ interface SettingsDialogProps {
   settings: Settings;
   onSave: (settings: Settings) => Promise<void>;
   onClearData?: () => void;
+  onDataRestored?: () => void;
 }
 
 export function SettingsDialog({
@@ -47,12 +48,19 @@ export function SettingsDialog({
   settings,
   onSave,
   onClearData,
+  onDataRestored,
 }: SettingsDialogProps) {
   const { toast } = useToast();
   const [baseCurrency, setBaseCurrency] = useState<Currency>(settings.baseCurrency);
   const [userName, setUserName] = useState(settings.userName || "");
   const [isSaving, setIsSaving] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setBaseCurrency(settings.baseCurrency);
+      setUserName(settings.userName || "");
+    }
+  }, [open, settings]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -96,7 +104,9 @@ export function SettingsDialog({
         if (storage.importData(content)) {
           toast({ title: "Data restored successfully" });
           onOpenChange(false);
-          window.location.reload();
+          if (onDataRestored) {
+            onDataRestored();
+          }
         } else {
           toast({ title: "Failed to restore data", variant: "destructive" });
         }
@@ -194,8 +204,8 @@ export function SettingsDialog({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  variant="outline"
-                  className="w-full justify-start text-destructive border-destructive/30 hover:bg-destructive/10"
+                  variant="destructive"
+                  className="w-full justify-start"
                   data-testid="button-clear-data"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -213,7 +223,6 @@ export function SettingsDialog({
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleClearData}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     Delete Everything
                   </AlertDialogAction>
