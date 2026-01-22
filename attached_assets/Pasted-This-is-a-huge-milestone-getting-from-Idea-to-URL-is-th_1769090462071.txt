@@ -1,0 +1,54 @@
+This is a huge milestone—**getting from "Idea" to "URL" is the hardest step.** You are officially a Builder.
+
+Since **Kira** is currently running on Replit as a web app with local storage, here is your strategic roadmap to getting this into people's hands immediately, managing the data limitation, and planning the next upgrade.
+
+### 1. How to distribute it *Right Now* (The PWA Strategy)
+
+You don't need the App Store yet. You can use the **Progressive Web App (PWA)** method. This allows anyone with the link to install Kira as an "app" on their home screen.
+
+* **The Pitch:** "I built a privacy-first wealth tracker. It runs offline, and your data never leaves your phone."
+* **The Instruction:** Send them your Replit URL (`https://kiramoney.replit.app/`) and tell them:
+1. Open in **Safari** (iOS) or **Chrome** (Android).
+2. Tap the **Share** button (Square with arrow).
+3. Scroll down and tap **"Add to Home Screen"**.
+
+
+
+**Action Item:**
+Update your `index.html` (or `app.json` if using Expo) to ensure the **High-Res Icon** we generated appears on their home screen.
+
+* *Code:* `<link rel="apple-touch-icon" href="/path-to-your-new-logo.png">`
+
+### 2. Solving the "Data on Individual Phone" Issue
+
+You mentioned the data is saved locally. **This is actually a feature, not a bug.**
+
+* **The Benefit:** You can market this as **"Zero-Knowledge Finance."** You (Ian) cannot see their data. It is 100% private to their device.
+* **The Risk:** If they clear their browser cache or lose their phone, their data is gone.
+
+**The Fix: Build a "Backup" Button (Critical)**
+Before you share this widely, ask your AI agent to add a simple **JSON Export/Import** feature.
+
+> **Prompt:** "Add a 'Settings' page with two buttons: 'Backup Data' (downloads a .json file of my data) and 'Restore Data' (allows me to upload a .json file). This is critical since we are using local storage."
+
+### 3. What to do Next (The Roadmap)
+
+#### Phase 1: The "Soft Launch" (This Week)
+
+* **Goal:** Get 10 friends (your "Council") to use it.
+* **Task:** focus on **UI "Mouthfeel"**. Does the green glow look premium? Is the haptic feedback (vibration) satisfying when they enter a number?
+* **Metric:** Do they come back to it tomorrow?
+
+#### Phase 2: The "Cloud" Upgrade (Next Month)
+
+If you want users to access their data on *both* their laptop and phone, or if you want to eventually charge a subscription, you will need a backend.
+
+* **Solution:** **Supabase** (an open-source Firebase alternative).
+* **Why:** It fits your "Builder" stack. It’s basically a spreadsheet (PostgreSQL) in the cloud. You can add "Sign in with Google," and their data will sync across devices.
+* **Prompt for later:** "Help me migrate my local storage to Supabase so users can sync data across devices."
+
+### Summary of Next Steps
+
+1. **Generate the Logo file** (convert the SVG code I gave you to PNG) and upload it to your Replit project so the app icon looks "Atas" (Premium).
+2. **Add the "Export Data" button** so your friends don't lose their inputs.
+3. **Share the link** with your "Old Flame" (Phylicia) or "Brother" (Lek) first. Watch them use it without explaining anything. See where they get stuck.

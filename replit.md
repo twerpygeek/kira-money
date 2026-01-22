@@ -5,7 +5,7 @@ KIRA is a privacy-first, manual-entry net worth tracker inspired by "Worth It" a
 
 ## Branding
 - **App Name**: KIRA / Kira Money
-- **Logo**: Kira_money_1769089620127.jpg (K arrow logo)
+- **Logo**: Kira_logo_1769090328833.png (K arrow logo)
 - **Deep Slate (BG)**: #0F172A
 - **Lighter Slate (Card)**: #1E2938
 - **Wealth Green (Primary)**: #10B981

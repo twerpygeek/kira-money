@@ -33,7 +33,7 @@ import {
   PieChart,
   Target,
 } from "lucide-react";
-import kiraLogo from "@assets/Kira_money_1769089620127.jpg";
+import kiraLogo from "@assets/Kira_logo_1769090328833.png";
 
 function calculateMilestone(netWorth: number): { target: number; progress: number } {
   const milestones = [10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000, 5000000, 10000000];
