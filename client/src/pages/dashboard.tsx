@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +14,7 @@ import { AddTransactionDialog } from "@/components/add-transaction-dialog";
 import { AllocationChart } from "@/components/allocation-chart";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { storage } from "@/lib/localStorage";
 import {
   type Asset,
   type Liability,
@@ -61,26 +60,28 @@ export default function Dashboard() {
   const [editItem, setEditItem] = useState<Asset | Liability | null>(null);
   const [editType, setEditType] = useState<"asset" | "liability">("asset");
   const [activeTab, setActiveTab] = useState("overview");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: settings, isLoading: settingsLoading } = useQuery<Settings>({
-    queryKey: ["/api/settings"],
-  });
+  const [settings, setSettings] = useState<Settings>({ baseCurrency: "USD", privacyMode: false });
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [liabilities, setLiabilities] = useState<Liability[]>([]);
+  const [history, setHistory] = useState<HistorySnapshot[]>([]);
 
-  const { data: assets = [], isLoading: assetsLoading } = useQuery<Asset[]>({
-    queryKey: ["/api/assets"],
-  });
+  const refreshData = useCallback(() => {
+    setSettings(storage.getSettings());
+    setAssets(storage.getAssets());
+    setLiabilities(storage.getLiabilities());
+    setHistory(storage.getHistory());
+  }, []);
 
-  const { data: liabilities = [], isLoading: liabilitiesLoading } = useQuery<Liability[]>({
-    queryKey: ["/api/liabilities"],
-  });
+  useEffect(() => {
+    refreshData();
+    setIsLoading(false);
+  }, [refreshData]);
 
-  const { data: history = [] } = useQuery<HistorySnapshot[]>({
-    queryKey: ["/api/history"],
-  });
-
-  const baseCurrency = settings?.baseCurrency || "USD";
-  const isPrivate = settings?.privacyMode || false;
-  const userName = settings?.userName;
+  const baseCurrency = settings.baseCurrency || "USD";
+  const isPrivate = settings.privacyMode || false;
+  const userName = settings.userName;
 
   const totalAssets = assets.reduce((sum, asset) => {
     return sum + convertToBaseCurrency(asset.value, asset.currency, baseCurrency);
@@ -100,114 +101,58 @@ export default function Dashboard() {
   const liquidAssets = assets.filter((a) => liquidCategories.includes(a.category));
   const illiquidAssets = assets.filter((a) => illiquidCategories.includes(a.category));
 
-  const addAssetMutation = useMutation({
-    mutationFn: async (data: { name: string; value: number; category: string; currency: Currency }) => {
-      return apiRequest("POST", "/api/assets", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/assets"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/history"] });
-      toast({ title: "Asset added successfully" });
-    },
-    onError: () => {
-      toast({ title: "Failed to add asset", variant: "destructive" });
-    },
-  });
+  const handleAddAsset = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+    storage.addAsset(data);
+    refreshData();
+    toast({ title: "Asset added successfully" });
+  };
 
-  const addLiabilityMutation = useMutation({
-    mutationFn: async (data: { name: string; value: number; category: string; currency: Currency }) => {
-      return apiRequest("POST", "/api/liabilities", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/liabilities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/history"] });
-      toast({ title: "Liability added successfully" });
-    },
-    onError: () => {
-      toast({ title: "Failed to add liability", variant: "destructive" });
-    },
-  });
+  const handleAddLiability = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+    storage.addLiability(data);
+    refreshData();
+    toast({ title: "Liability added successfully" });
+  };
 
-  const updateAssetMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name: string; value: number; category: string; currency: Currency } }) => {
-      return apiRequest("PATCH", `/api/assets/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/assets"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/history"] });
-      toast({ title: "Asset updated successfully" });
-    },
-    onError: () => {
-      toast({ title: "Failed to update asset", variant: "destructive" });
-    },
-  });
+  const handleUpdateAsset = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+    storage.updateAsset(id, data);
+    refreshData();
+    toast({ title: "Asset updated successfully" });
+  };
 
-  const updateLiabilityMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name: string; value: number; category: string; currency: Currency } }) => {
-      return apiRequest("PATCH", `/api/liabilities/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/liabilities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/history"] });
-      toast({ title: "Liability updated successfully" });
-    },
-    onError: () => {
-      toast({ title: "Failed to update liability", variant: "destructive" });
-    },
-  });
+  const handleUpdateLiability = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+    storage.updateLiability(id, data);
+    refreshData();
+    toast({ title: "Liability updated successfully" });
+  };
 
-  const deleteAssetMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/assets/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/assets"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/history"] });
-      toast({ title: "Asset deleted" });
-    },
-    onError: () => {
-      toast({ title: "Failed to delete asset", variant: "destructive" });
-    },
-  });
+  const handleDeleteAsset = (id: string) => {
+    storage.deleteAsset(id);
+    refreshData();
+    toast({ title: "Asset deleted" });
+  };
 
-  const deleteLiabilityMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/liabilities/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/liabilities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/history"] });
-      toast({ title: "Liability deleted" });
-    },
-    onError: () => {
-      toast({ title: "Failed to delete liability", variant: "destructive" });
-    },
-  });
+  const handleDeleteLiability = (id: string) => {
+    storage.deleteLiability(id);
+    refreshData();
+    toast({ title: "Liability deleted" });
+  };
 
-  const updateSettingsMutation = useMutation({
-    mutationFn: async (newSettings: Settings) => {
-      return apiRequest("PATCH", "/api/settings", newSettings);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      toast({ title: "Settings saved" });
-    },
-    onError: () => {
-      toast({ title: "Failed to save settings", variant: "destructive" });
-    },
-  });
+  const handleSaveSettings = async (newSettings: Settings) => {
+    storage.setSettings(newSettings);
+    refreshData();
+    toast({ title: "Settings saved" });
+  };
 
-  const togglePrivacyMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("PATCH", "/api/settings", {
-        ...settings,
-        privacyMode: !isPrivate,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-    },
-  });
+  const handleTogglePrivacy = () => {
+    storage.updateSettings({ privacyMode: !isPrivate });
+    refreshData();
+  };
+
+  const handleClearAllData = () => {
+    storage.clearAllData();
+    refreshData();
+    toast({ title: "All data cleared" });
+  };
 
   const handleEdit = (item: Asset | Liability, type: "asset" | "liability") => {
     setEditItem(item);
@@ -221,8 +166,6 @@ export default function Dashboard() {
       setEditItem(null);
     }
   };
-
-  const isLoading = settingsLoading || assetsLoading || liabilitiesLoading;
 
   if (isLoading) {
     return (
@@ -262,7 +205,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-1">
             <PrivacyToggle
               isPrivate={isPrivate}
-              onToggle={() => togglePrivacyMutation.mutate()}
+              onToggle={handleTogglePrivacy}
             />
             <ThemeToggle />
             <Button
@@ -385,7 +328,7 @@ export default function Dashboard() {
                           baseCurrency={baseCurrency}
                           isPrivate={isPrivate}
                           onEdit={() => handleEdit(asset, "asset")}
-                          onDelete={() => deleteAssetMutation.mutate(asset.id)}
+                          onDelete={() => handleDeleteAsset(asset.id)}
                         />
                       ))}
                     </div>
@@ -407,7 +350,7 @@ export default function Dashboard() {
                           baseCurrency={baseCurrency}
                           isPrivate={isPrivate}
                           onEdit={() => handleEdit(asset, "asset")}
-                          onDelete={() => deleteAssetMutation.mutate(asset.id)}
+                          onDelete={() => handleDeleteAsset(asset.id)}
                         />
                       ))}
                     </div>
@@ -429,7 +372,7 @@ export default function Dashboard() {
                           baseCurrency={baseCurrency}
                           isPrivate={isPrivate}
                           onEdit={() => handleEdit(liability, "liability")}
-                          onDelete={() => deleteLiabilityMutation.mutate(liability.id)}
+                          onDelete={() => handleDeleteLiability(liability.id)}
                         />
                       ))}
                     </div>
@@ -510,30 +453,21 @@ export default function Dashboard() {
       <AddTransactionDialog
         open={addDialogOpen}
         onOpenChange={handleDialogClose}
-        onAddAsset={async (data) => {
-          await addAssetMutation.mutateAsync(data);
-        }}
-        onAddLiability={async (data) => {
-          await addLiabilityMutation.mutateAsync(data);
-        }}
+        onAddAsset={handleAddAsset}
+        onAddLiability={handleAddLiability}
         baseCurrency={baseCurrency}
         editItem={editItem}
         editType={editType}
-        onEditAsset={async (id, data) => {
-          await updateAssetMutation.mutateAsync({ id, data });
-        }}
-        onEditLiability={async (id, data) => {
-          await updateLiabilityMutation.mutateAsync({ id, data });
-        }}
+        onEditAsset={handleUpdateAsset}
+        onEditLiability={handleUpdateLiability}
       />
 
       <SettingsDialog
         open={settingsDialogOpen}
         onOpenChange={setSettingsDialogOpen}
-        settings={settings || { baseCurrency: "USD", privacyMode: false }}
-        onSave={async (newSettings) => {
-          await updateSettingsMutation.mutateAsync(newSettings);
-        }}
+        settings={settings}
+        onSave={handleSaveSettings}
+        onClearData={handleClearAllData}
       />
     </div>
   );

@@ -16,9 +16,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { currencies, currencySymbols, type Currency, type Settings } from "@shared/schema";
+import { storage } from "@/lib/localStorage";
 import { useState } from "react";
-import { Loader2, Download } from "lucide-react";
+import { Loader2, Download, Upload, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SettingsDialogProps {
@@ -26,6 +38,7 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
   settings: Settings;
   onSave: (settings: Settings) => Promise<void>;
+  onClearData?: () => void;
 }
 
 export function SettingsDialog({
@@ -33,6 +46,7 @@ export function SettingsDialog({
   onOpenChange,
   settings,
   onSave,
+  onClearData,
 }: SettingsDialogProps) {
   const { toast } = useToast();
   const [baseCurrency, setBaseCurrency] = useState<Currency>(settings.baseCurrency);
@@ -54,33 +68,54 @@ export function SettingsDialog({
     }
   };
 
-  const handleExport = async () => {
-    setIsExporting(true);
-    try {
-      const response = await fetch("/api/export");
-      if (!response.ok) throw new Error("Export failed");
+  const handleExportJSON = () => {
+    const jsonData = storage.exportData();
+    const blob = new Blob([jsonData], { type: "application/json" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kira-backup-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toast({ title: "Backup downloaded successfully" });
+  };
+
+  const handleImportJSON = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
       
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `kira-export-${new Date().toISOString().split("T")[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      
-      toast({ title: "Data exported successfully" });
-    } catch (error) {
-      toast({ title: "Failed to export data", variant: "destructive" });
-    } finally {
-      setIsExporting(false);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        if (storage.importData(content)) {
+          toast({ title: "Data restored successfully" });
+          onOpenChange(false);
+          window.location.reload();
+        } else {
+          toast({ title: "Failed to restore data", variant: "destructive" });
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  const handleClearData = () => {
+    if (onClearData) {
+      onClearData();
+      onOpenChange(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
+      <DialogContent className="sm:max-w-md rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold tracking-tight">Settings</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
@@ -126,28 +161,65 @@ export function SettingsDialog({
 
           <div className="space-y-3">
             <Label className="text-xs text-muted-foreground uppercase tracking-wide">Data Management</Label>
+            
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={handleExport}
-              disabled={isExporting}
-              data-testid="button-export"
+              onClick={handleExportJSON}
+              data-testid="button-backup"
             >
-              {isExporting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export to CSV
-                </>
-              )}
+              <Download className="mr-2 h-4 w-4" />
+              Backup Data
             </Button>
+            
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={handleImportJSON}
+              data-testid="button-restore"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Restore Data
+            </Button>
+            
             <p className="text-xs text-muted-foreground">
-              Download all your assets, liabilities, and history as a spreadsheet
+              Your data is stored locally on this device. Use backup to save a copy.
             </p>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Danger Zone</Label>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-destructive border-destructive/30 hover:bg-destructive/10"
+                  data-testid="button-clear-data"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Clear All Data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all your assets, liabilities, and history. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleClearData}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete Everything
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 
