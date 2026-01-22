@@ -30,7 +30,7 @@ import {
 import { currencies, currencySymbols, type Currency, type Settings } from "@shared/schema";
 import { storage } from "@/lib/localStorage";
 import { useState, useEffect } from "react";
-import { Loader2, Download, Upload, Trash2 } from "lucide-react";
+import { Loader2, Download, Upload, Trash2, FileSpreadsheet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SettingsDialogProps {
@@ -90,10 +90,10 @@ export function SettingsDialog({
     toast({ title: "Backup downloaded successfully" });
   };
 
-  const handleImportJSON = () => {
+  const handleImportFile = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".json";
+    input.accept = ".json,.csv";
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -101,19 +101,50 @@ export function SettingsDialog({
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target?.result as string;
-        if (storage.importData(content)) {
-          toast({ title: "Data restored successfully" });
-          onOpenChange(false);
-          if (onDataRestored) {
-            onDataRestored();
+        
+        if (file.name.endsWith(".csv")) {
+          const result = storage.importCSV(content);
+          if (result) {
+            toast({ 
+              title: "CSV imported successfully!", 
+              description: `Added ${result.assets} assets and ${result.liabilities} liabilities` 
+            });
+            onOpenChange(false);
+            if (onDataRestored) {
+              onDataRestored();
+            }
+          } else {
+            toast({ title: "Failed to import CSV. Make sure it has 'name' and 'value' columns.", variant: "destructive" });
           }
         } else {
-          toast({ title: "Failed to restore data", variant: "destructive" });
+          if (storage.importData(content)) {
+            toast({ title: "Data restored successfully" });
+            onOpenChange(false);
+            if (onDataRestored) {
+              onDataRestored();
+            }
+          } else {
+            toast({ title: "Failed to restore data", variant: "destructive" });
+          }
         }
       };
       reader.readAsText(file);
     };
     input.click();
+  };
+
+  const handleExportCSV = () => {
+    const csvData = storage.exportCSV();
+    const blob = new Blob([csvData], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kira-export-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toast({ title: "CSV exported successfully" });
   };
 
   const handleClearData = () => {
@@ -179,21 +210,31 @@ export function SettingsDialog({
               data-testid="button-backup"
             >
               <Download className="mr-2 h-4 w-4" />
-              Backup Data
+              Backup Data (JSON)
+            </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={handleExportCSV}
+              data-testid="button-export-csv"
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Export to Spreadsheet (CSV)
             </Button>
             
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={handleImportJSON}
+              onClick={handleImportFile}
               data-testid="button-restore"
             >
               <Upload className="mr-2 h-4 w-4" />
-              Restore Data
+              Import Data (JSON or CSV)
             </Button>
             
             <p className="text-xs text-muted-foreground">
-              Your data is stored locally on this device. Use backup to save a copy.
+              Your data is stored locally. Import from other apps using CSV or restore from backup.
             </p>
           </div>
 

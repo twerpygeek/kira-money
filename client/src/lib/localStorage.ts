@@ -220,4 +220,102 @@ export const storage = {
       return false;
     }
   },
+
+  importCSV(csvString: string): { assets: number; liabilities: number } | null {
+    try {
+      const lines = csvString.trim().split('\n');
+      if (lines.length < 2) return null;
+
+      const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
+      
+      const nameIdx = headers.findIndex(h => h === 'name' || h === 'account' || h === 'description');
+      const valueIdx = headers.findIndex(h => h === 'value' || h === 'amount' || h === 'balance');
+      const typeIdx = headers.findIndex(h => h === 'type' || h === 'account type');
+      const categoryIdx = headers.findIndex(h => h === 'category');
+      const currencyIdx = headers.findIndex(h => h === 'currency');
+      const notesIdx = headers.findIndex(h => h === 'notes' || h === 'note' || h === 'memo');
+
+      if (nameIdx === -1 || valueIdx === -1) return null;
+
+      const validAssetCategories = ['cash', 'stocks', 'crypto', 'property', 'vehicles', 'retirement', 'other'];
+      const validLiabilityCategories = ['credit_card', 'mortgage', 'personal_loan', 'student_loan', 'car_loan', 'other'];
+      const validCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'SGD', 'MYR', 'AUD', 'CAD', 'CHF', 'INR'];
+
+      let assetsAdded = 0;
+      let liabilitiesAdded = 0;
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = this.parseCSVLine(lines[i]);
+        if (values.length <= Math.max(nameIdx, valueIdx)) continue;
+
+        const name = values[nameIdx]?.trim();
+        const valueStr = values[valueIdx]?.replace(/[$,"\s]/g, '');
+        const value = parseFloat(valueStr);
+
+        if (!name || isNaN(value)) continue;
+
+        const typeRaw = typeIdx >= 0 ? values[typeIdx]?.toLowerCase().trim() : '';
+        const categoryRaw = categoryIdx >= 0 ? values[categoryIdx]?.toLowerCase().trim().replace(/\s+/g, '_') : 'other';
+        const currencyRaw = currencyIdx >= 0 ? values[currencyIdx]?.toUpperCase().trim() : 'USD';
+        const notes = notesIdx >= 0 ? values[notesIdx]?.trim() : undefined;
+
+        const currency = validCurrencies.includes(currencyRaw) ? currencyRaw as Currency : 'USD';
+
+        const isLiability = typeRaw.includes('liability') || typeRaw.includes('debt') || 
+                           typeRaw.includes('loan') || typeRaw.includes('credit') || 
+                           value < 0 || validLiabilityCategories.includes(categoryRaw);
+
+        if (isLiability) {
+          const category = validLiabilityCategories.includes(categoryRaw) ? categoryRaw : 'other';
+          this.addLiability({ name, value: Math.abs(value), category, currency, notes });
+          liabilitiesAdded++;
+        } else {
+          const category = validAssetCategories.includes(categoryRaw) ? categoryRaw : 'other';
+          this.addAsset({ name, value: Math.abs(value), category, currency, notes });
+          assetsAdded++;
+        }
+      }
+
+      return { assets: assetsAdded, liabilities: liabilitiesAdded };
+    } catch {
+      return null;
+    }
+  },
+
+  parseCSVLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  },
+
+  exportCSV(): string {
+    const assets = this.getAssets();
+    const liabilities = this.getLiabilities();
+    
+    let csv = 'Type,Name,Value,Category,Currency,Notes\n';
+    
+    assets.forEach(asset => {
+      csv += `Asset,"${asset.name}",${asset.value},${asset.category},${asset.currency},"${asset.notes || ''}"\n`;
+    });
+    
+    liabilities.forEach(liability => {
+      csv += `Liability,"${liability.name}",${liability.value},${liability.category},${liability.currency},"${liability.notes || ''}"\n`;
+    });
+    
+    return csv;
+  },
 };
