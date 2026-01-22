@@ -1,0 +1,104 @@
+It looks like you’ve switched from a Web App (Next.js) approach to a **Mobile App (Expo/React Native)** approach based on the file structure you uploaded.
+
+This is actually better for a "personal finance tracker" because it lives in your pocket. However, because this is React Native and not standard HTML/CSS, we need to adjust the instructions so the AI builds the UI correctly (using Flexbox or NativeWind) and uses mobile-compatible libraries.
+
+Here is the **Vibe Code Attack Plan** to feed your AI (Cursor, Windsurf, or Replit Agent) step-by-step.
+
+### Phase 1: The Setup (Style & Tools)
+
+*Goal: Get the styling engine and chart library ready so the app doesn't look like a generic prototype.*
+
+**Copy & Paste this to your AI:**
+
+> "I am building a Net Worth Tracker using this Expo project.
+> **Task 1: Setup Dependencies**
+> 1. Install **NativeWind** (Tailwind for React Native). I want to use utility classes for styling to move fast. Configure the `babel.config.js` and `tailwind.config.js` for me.
+> 2. Install `react-native-gifted-charts` (or a similar lightweight chart library compatible with Expo).
+> 3. Ensure `lucide-react-native` is set up for icons.
+> 
+> 
+> **Task 2: Global Layout**
+> Create a strictly typed 'Theme' constant for colors:
+> * Background: #0F172A (Dark Slate)
+> * Primary: #10B981 (Wealth Green)
+> * Danger: #EF4444 (Debt Red)
+> * Card: #1E293B (Lighter Slate)
+> Apply a dark mode layout to the root `_layout.tsx`."
+> 
+> 
+
+---
+
+### Phase 2: The "Brain" (Data Layer)
+
+*Goal: Create the logic before the UI. This ensures the app actually works.*
+
+**Copy & Paste this to your AI:**
+
+> "Now let's build the logic layer. I need a robust custom hook called `useWealthStore`.
+> **Requirements:**
+> 1. **Persistence:** Use `@react-native-async-storage/async-storage` to save data locally.
+> 2. **Data Structure:**
+> * `Asset`: { id, name, value, category (Cash, Stock, Crypto, Property), currency }
+> * `Liability`: { id, name, value, category, currency }
+> * `History`: { date, totalNetWorth } (snapshot this daily).
+> 
+> 
+> 3. **Functions:**
+> * `addTransaction(item)`
+> * `removeTransaction(id)`
+> * `getNetWorth()`: Returns (Sum of Assets - Sum of Liabilities).
+> 
+> 
+> 
+> 
+> Write this hook in a separate file `hooks/useWealthStore.ts` and make sure it handles loading states."
+
+---
+
+### Phase 3: The "Vibe" (UI Construction)
+
+*Goal: Build the Dashboard exactly like the 'Worth It' minimalist aesthetic.*
+
+**Copy & Paste this to your AI:**
+
+> "Let's build the Home Screen (`app/index.tsx`).
+> **Design Vision:** 'Apple Wallet' aesthetic. Clean, big numbers, dark mode.
+> **Layout:**
+> 1. **Header:** A simple 'Good Afternoon' greeting and a 'Settings' gear icon.
+> 2. **Hero Section:** Display the **Total Net Worth** in a massive font (e.g., text-5xl) in the center. Below it, show a small badge: '+2.4% this month' (green).
+> 3. **Chart:** Under the number, render a simple Line Chart (using the library we installed) showing the last 6 data points of history. Hide the axes labels to keep it clean.
+> 4. **Cards:** Two side-by-side cards below the chart:
+> * **Assets:** Green text, showing total asset value.
+> * **Liabilities:** Red text, showing total debt value.
+> 
+> 
+> 5. **Action:** A floating '+' button at the bottom right to add a new item."
+> 
+> 
+
+---
+
+### Phase 4: The Input Flow
+
+*Goal: The screen where you actually type in numbers.*
+
+**Copy & Paste this to your AI:**
+
+> "Create a modal screen `app/add.tsx` for adding items.
+> **UI Requirements:**
+> 1. **Segmented Control:** Top toggle to switch between 'Asset' and 'Liability'.
+> 2. **Big Input:** A massive number input field in the center (auto-focus).
+> 3. **Category Selector:** A horizontal scrollable list of pill chips (Cash, Crypto, Real Estate, etc.).
+> 4. **Name Input:** A simple text field for 'What is this?' (e.g., 'Bitcoin', 'Apartment').
+> 5. **Save Button:** A large full-width button at the bottom.
+> 
+> 
+> **Logic:** Connect this form to the `addTransaction` function from our `useWealthStore` hook. When saved, vibrate the device (using `expo-haptics`) and close the modal."
+
+### Summary for You (The Strategist)
+
+Since you are a "Builder" who likes speed:
+
+1. Run **Phase 1** first. If the AI fails to configure NativeWind (it can be tricky with Babel), ask it to "Fallback to `StyleSheet` but keep the design strictly minimalist."
+2. Once Phase 2 is done, ask the AI to **"Generate dummy data so I can see the chart working immediately."** This gives you that instant gratification/visual feedback to verify the vibe.

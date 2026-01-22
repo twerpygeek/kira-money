@@ -1,0 +1,94 @@
+Project Name: Net Worth Tracker (Worth It Clone)
+One-Liner: A privacy-first, manual-entry net worth tracker that aggregates assets and debts into a single "Wealth Score" without connecting to bank APIs.
+
+1. The "Vibe" & Design Language
+Visual Style: "Clean Fintech Minimalist." Apple-like design. Heavy use of whitespace, rounded corners (20px), and san-serif fonts (Inter or SF Pro).
+
+Color Palette:
+
+Primary: Deep Midnight Blue or Forest Green (Wealth).
+
+Accents: Muted Gold (for highs) and Soft Red (for debts).
+
+Background: Off-white/Gray (Light mode) and Deep Charcoal (Dark mode).
+
+Interaction: Snappy, instant updates. No loading spinners. Haptic feedback on saving numbers (if mobile).
+
+2. Core User Flow (The Happy Path)
+Onboarding: User opens app -> Selects "Base Currency" (e.g., USD, SGD, MYR) -> Enters a name (optional). No email signup required for MVP.
+
+Dashboard (Home):
+
+Big Number: Total Net Worth prominently displayed in the center.
+
+Breakdown: Two cards below: "Assets" (Green) and "Liabilities" (Red).
+
+Chart: A simple line chart showing net worth history over time (3M, 6M, 1Y, All).
+
+Adding Data:
+
+User clicks a big "+" button.
+
+Chooses Category: Cash, Investment, Real Estate, Crypto, or Debt.
+
+Enters Amount (Calculated in base currency).
+
+(Optional) Toggles currency if the asset is foreign (e.g., holding USD assets while living in Malaysia).
+
+Insights: A separate tab showing % allocation (e.g., "60% Real Estate, 20% Cash").
+
+3. Feature Requirements (MVP)
+A. Asset & Debt Management
+Manual Entry: Users type the value. No Plaid/Bank connections.
+
+Categories:
+
+Assets: Cash, Stocks/ETFs, Crypto, Property, Vehicles, Custom.
+
+Liabilities: Credit Card, Mortgage, Personal Loans.
+
+CRUD: Create, Read, Update, Delete accounts.
+
+B. Multi-Currency Engine
+Base Currency: User sets one global currency.
+
+Conversion: If a user enters an asset in USD but their base is MYR, the app auto-converts it using a static rate (MVP) or live API (Phase 2).
+
+AI Instruction: "Use a hardcoded exchange rate map for the MVP to keep it simple, or fetch from a free API like exchangerate-api."
+
+C. Data & Privacy (Crucial)
+Local First: All data is stored in localStorage or IndexedDB on the browser/device initially.
+
+Privacy Mode: A button to "blur" the numbers (useful when opening the app in public).
+
+4. Recommended Tech Stack for Vibe Coding
+Frontend: Next.js (React) + Tailwind CSS (fastest for AI to generate).
+
+Charts: Recharts or Shadcn/ui Charts (AI handles these very well).
+
+Icons: Lucide React.
+
+Backend (Optional for MVP): Supabase (if you want sync later). For now, stick to Local Storage to launch faster.
+
+5. Master Prompt (Copy & Paste to AI)
+Use this prompt to start your session:
+
+"I want to build a mobile-first Net Worth Tracker web app that looks and feels like 'GetWorthIt.com'.
+
+Core Concept: A manual-entry finance tracker where I input my assets and debts, and it calculates my total net worth. No bank connections.
+
+Tech Stack: Next.js, Tailwind CSS, Lucide Icons, Recharts. Use LocalStorage for data persistence (no backend for now).
+
+Design Vibe: Apple-style minimalism. Large numbers, clean typography, rounded cards.
+
+Key Features to Build:
+
+A dashboard displaying Total Net Worth.
+
+A form to add Assets (Cash, Stock, Property) and Liabilities (Loans, Credit Cards).
+
+A currency converter that normalizes all values to a user-selected Base Currency (e.g., USD).
+
+A history chart showing net worth changes over time.
+
+Start by creating the folder structure and the main Dashboard UI component."
