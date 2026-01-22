@@ -88,11 +88,14 @@ USD, EUR, GBP, JPY, CNY, SGD, MYR, AUD, CAD, CHF, INR
 
 ## Key Features
 - **Massive Net Worth Display**: text-6xl hero display with sparkline trend behind
+- **Monthly Change**: Shows percentage change from last month below net worth
 - **Milestone Progress**: Gamified progress tracking to next financial goal ($10K, $25K, $50K, etc.)
 - **Asset Grouping**: Liquid Assets (cash, stocks, crypto) vs Illiquid Assets (property, retirement)
 - **Debt-to-Asset Ratio**: Progress bar showing financial health
 - **Full-Screen Add Modal**: Calculator-style input on mobile, constrained on desktop
 - **Privacy Mode**: Blur sensitive financial data with privacy-blur CSS class
+- **Notes on Accounts**: Optional notes field for each asset and liability
+- **CSV Export**: Export all data to spreadsheet from settings
 
 ## Recent Changes (Jan 2026)
 - Premium UI overhaul with rich navy/slate color palette
