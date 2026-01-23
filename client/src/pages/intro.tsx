@@ -32,6 +32,7 @@ export default function Intro() {
   const [, setLocation] = useLocation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [animationsReady, setAnimationsReady] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
@@ -53,18 +54,23 @@ export default function Intro() {
   }, []);
 
   useEffect(() => {
-    if (!particlesRef.current) return;
+    const timer = setTimeout(() => {
+      setAnimationsReady(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!animationsReady || !particlesRef.current) return;
     
-    const particleCount = 20;
-    const particles: { el: HTMLDivElement; x: number; y: number; vx: number; vy: number; size: number; opacity: number }[] = [];
+    const particleCount = 12;
+    const particles: { el: HTMLDivElement; x: number; y: number; vx: number; vy: number }[] = [];
     
     for (let i = 0; i < particleCount; i++) {
       const el = document.createElement("div");
-      const size = Math.random() * 4 + 2;
+      const size = Math.random() * 3 + 2;
       el.className = "absolute rounded-full bg-primary pointer-events-none";
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      el.style.opacity = `${Math.random() * 0.3 + 0.1}`;
+      el.style.cssText = `width:${size}px;height:${size}px;opacity:${Math.random() * 0.2 + 0.1};will-change:transform`;
       el.dataset.testid = `particle-${i}`;
       particlesRef.current.appendChild(el);
       
@@ -72,17 +78,22 @@ export default function Intro() {
         el,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.2,
-        size,
-        opacity: Math.random() * 0.3 + 0.1,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
       });
     }
 
-    const animateParticles = () => {
+    let lastTime = 0;
+    const animateParticles = (time: number) => {
+      if (time - lastTime < 33) {
+        rafRef.current = requestAnimationFrame(animateParticles);
+        return;
+      }
+      lastTime = time;
+
       particles.forEach(p => {
-        const attractX = (mousePosRef.current.x - p.x) * 0.001;
-        const attractY = (mousePosRef.current.y - p.y) * 0.001;
+        const attractX = (mousePosRef.current.x - p.x) * 0.0008;
+        const attractY = (mousePosRef.current.y - p.y) * 0.0008;
         
         p.x += p.vx + attractX;
         p.y += p.vy + attractY;
@@ -92,9 +103,7 @@ export default function Intro() {
         if (p.y < 0) p.y = 100;
         if (p.y > 100) p.y = 0;
         
-        p.el.style.left = `${p.x}%`;
-        p.el.style.top = `${p.y}%`;
-        p.el.style.transform = `translate(-50%, -50%)`;
+        p.el.style.transform = `translate3d(${p.x}vw, ${p.y}vh, 0)`;
       });
       
       rafRef.current = requestAnimationFrame(animateParticles);
@@ -106,9 +115,11 @@ export default function Intro() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       particles.forEach(p => p.el.remove());
     };
-  }, []);
+  }, [animationsReady]);
 
   useEffect(() => {
+    if (!animationsReady) return;
+
     let ticking = false;
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -144,9 +155,8 @@ export default function Intro() {
       if (!gradientRef.current) return;
       const { x, y } = mousePosRef.current;
       gradientRef.current.style.background = `
-        radial-gradient(ellipse 80% 50% at ${30 + x * 0.1}% ${20 + y * 0.1}%, hsl(160 84% 39% / 0.3) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at ${70 - x * 0.05}% ${60 - y * 0.05}%, hsl(173 80% 40% / 0.2) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 60% at ${50 + x * 0.08}% ${80 - y * 0.08}%, hsl(200 70% 50% / 0.15) 0%, transparent 50%)
+        radial-gradient(ellipse 80% 50% at ${30 + x * 0.1}% ${20 + y * 0.1}%, hsl(160 84% 39% / 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at ${70 - x * 0.05}% ${60 - y * 0.05}%, hsl(173 80% 40% / 0.15) 0%, transparent 50%)
       `;
     };
 
@@ -154,8 +164,8 @@ export default function Intro() {
       const scrollY = scrollYRef.current;
       parallaxLayersRef.current.forEach((layer, i) => {
         if (layer) {
-          const depth = [0.3, 0.5, 0.2, 0.4, 0.6, 0.3][i] || 0.3;
-          layer.style.transform = `translateY(${scrollY * depth * -0.3}px)`;
+          const depth = [0.2, 0.3, 0.15, 0.25, 0.35, 0.2][i] || 0.2;
+          layer.style.transform = `translate3d(0, ${scrollY * depth * -0.2}px, 0)`;
         }
       });
     };
@@ -167,7 +177,7 @@ export default function Intro() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [animationsReady]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -252,44 +262,50 @@ export default function Intro() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-background overflow-hidden relative">
-      <div 
-        ref={gradientRef}
-        className="fixed inset-0 pointer-events-none overflow-hidden animate-morph-gradient opacity-30"
-        data-testid="morphing-gradient"
-      />
+      {animationsReady && (
+        <>
+          <div 
+            ref={gradientRef}
+            className="fixed inset-0 pointer-events-none overflow-hidden opacity-30"
+            style={{ willChange: 'background' }}
+            data-testid="morphing-gradient"
+          />
 
-      <div 
-        ref={particlesRef}
-        className="fixed inset-0 pointer-events-none overflow-hidden"
-      />
+          <div 
+            ref={particlesRef}
+            className="fixed inset-0 pointer-events-none overflow-hidden"
+          />
 
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {floatingIcons.map(({ Icon, delay, x, y }, index) => (
-          <div
-            key={index}
-            ref={el => { if (el) parallaxLayersRef.current[index] = el; }}
-            className="absolute text-primary/10 animate-float"
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              animationDelay: `${delay}s`,
-            }}
-            data-testid={`floating-icon-${index}`}
-          >
-            <Icon className="h-12 w-12 md:h-16 md:w-16" />
+          <div className="fixed inset-0 pointer-events-none overflow-hidden">
+            {floatingIcons.map(({ Icon, delay, x, y }, index) => (
+              <div
+                key={index}
+                ref={el => { if (el) parallaxLayersRef.current[index] = el; }}
+                className="absolute text-primary/10 animate-float"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  animationDelay: `${delay}s`,
+                  willChange: 'transform',
+                }}
+                data-testid={`floating-icon-${index}`}
+              >
+                <Icon className="h-10 w-10 md:h-12 md:w-12" />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
-      </div>
+          <div className="fixed inset-0 pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse-slow" />
+            <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-primary/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }} />
+          </div>
+        </>
+      )}
 
       <div className="relative z-10">
         <header className="flex justify-between items-center gap-4 p-4 max-w-4xl glass-header rounded-2xl mt-4 mx-4 sm:mx-auto">
           <div className="flex items-center gap-2" data-testid="logo-header">
-            <img src={kiraLogo} alt="KIRA" className="w-8 h-8 rounded-lg animate-fade-in" />
+            <img src={kiraLogo} alt="KIRA" className="w-8 h-8 rounded-lg" />
             <span className="font-bold text-lg tracking-tight">KIRA</span>
           </div>
           <div className="flex items-center gap-2">
@@ -298,7 +314,6 @@ export default function Intro() {
                 variant="outline" 
                 size="sm" 
                 onClick={handleInstallClick}
-                className="animate-fade-in"
                 data-testid="button-install-header"
               >
                 <Download className="h-4 w-4 mr-1" />
@@ -317,24 +332,24 @@ export default function Intro() {
 
         <main className="px-4 pb-12">
           <section className="max-w-4xl mx-auto text-center py-12 md:py-20">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6 animate-fade-in-up backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
               <Shield className="h-4 w-4" />
               Privacy-First Finance
             </div>
             
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
               Track Your Net Worth
               <br />
               <span className="text-primary bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">Without Compromising Privacy</span>
             </h1>
             
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               KIRA is a simple, beautiful net worth tracker that keeps your financial data 
               completely private. No accounts, no cloud sync, no data collection. 
               Everything stays on your device.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/dashboard">
                 <Button size="lg" className="gradient-primary w-full sm:w-auto" data-testid="button-get-started">
                   Get Started
@@ -353,7 +368,7 @@ export default function Intro() {
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground mt-3 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+            <p className="text-xs text-muted-foreground mt-3">
               Supports JSON and CSV files from other apps
             </p>
           </section>
@@ -390,21 +405,21 @@ export default function Intro() {
                 <h2 className="text-xl font-bold mb-4 tracking-tight">How It Works</h2>
                 
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 animate-fade-in-left" style={{ animationDelay: "0.1s" }}>
+                  <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
                       <p className="font-medium">Add your assets and liabilities</p>
                       <p className="text-sm text-muted-foreground">Cash, investments, property, loans - track everything in one place</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 animate-fade-in-left" style={{ animationDelay: "0.2s" }}>
+                  <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
                       <p className="font-medium">See your complete financial picture</p>
                       <p className="text-sm text-muted-foreground">Beautiful charts show your net worth, allocation, and progress</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 animate-fade-in-left" style={{ animationDelay: "0.3s" }}>
+                  <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
                       <p className="font-medium">Data stays on your device</p>
