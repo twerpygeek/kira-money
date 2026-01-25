@@ -318,4 +318,36 @@ export const storage = {
     
     return csv;
   },
+
+  getCSVTemplate(): string {
+    return `Type,Name,Value,Category,Currency,Notes
+Asset,Checking Account,5000,cash,USD,Main bank account
+Asset,Investment Portfolio,25000,stocks,USD,Vanguard S&P 500
+Asset,Bitcoin Holdings,10000,crypto,USD,Cold wallet
+Asset,Primary Residence,350000,property,USD,Home value
+Asset,Car,15000,vehicles,USD,Toyota Camry 2022
+Asset,401k,50000,retirement,USD,Employer match
+Liability,Credit Card,2500,credit_card,USD,Chase Sapphire
+Liability,Mortgage,280000,mortgage,USD,30-year fixed
+Liability,Student Loan,35000,student_loan,USD,Federal loans
+Liability,Car Loan,12000,car_loan,USD,Auto financing
+
+---INSTRUCTIONS---
+Fill in your data above following this format:
+
+TYPE: Must be "Asset" or "Liability"
+
+ASSET CATEGORIES: cash, stocks, crypto, property, vehicles, retirement, other
+
+LIABILITY CATEGORIES: credit_card, mortgage, personal_loan, student_loan, car_loan, other
+
+CURRENCIES: USD, EUR, GBP, JPY, CNY, SGD, MYR, AUD, CAD, CHF, INR
+
+TIPS:
+- Delete the example rows and add your own
+- Delete these instructions before importing
+- Value should be a positive number (no $ or commas)
+- Notes are optional
+`;
+  },
 };

@@ -368,9 +368,27 @@ export default function Intro() {
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground mt-3">
-              Supports JSON and CSV files from other apps
-            </p>
+            <div className="flex flex-col items-center gap-1 mt-3">
+              <p className="text-xs text-muted-foreground">
+                Supports JSON and CSV files
+              </p>
+              <button
+                onClick={() => {
+                  const template = storage.getCSVTemplate();
+                  const blob = new Blob([template], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "kira_import_template.csv";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="text-xs text-primary hover:underline"
+                data-testid="link-download-template"
+              >
+                Download CSV template
+              </button>
+            </div>
           </section>
 
           <section className="max-w-4xl mx-auto py-12">

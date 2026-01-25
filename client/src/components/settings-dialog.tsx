@@ -30,7 +30,7 @@ import {
 import { currencies, currencySymbols, type Currency, type Settings } from "@shared/schema";
 import { storage } from "@/lib/localStorage";
 import { useState, useEffect } from "react";
-import { Loader2, Download, Upload, Trash2, FileSpreadsheet } from "lucide-react";
+import { Loader2, Download, Upload, Trash2, FileSpreadsheet, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SettingsDialogProps {
@@ -232,9 +232,31 @@ export function SettingsDialog({
               <Upload className="mr-2 h-4 w-4" />
               Import Data (JSON or CSV)
             </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => {
+                const template = storage.getCSVTemplate();
+                const blob = new Blob([template], { type: "text/csv" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "kira_import_template.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                toast({ title: "Template downloaded - fill it in and import!" });
+              }}
+              data-testid="button-download-template"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              Download CSV Template
+            </Button>
             
             <p className="text-xs text-muted-foreground">
-              Your data is stored locally. Import from other apps using CSV or restore from backup.
+              Your data is stored locally. Download the template to see the expected format, then import your data.
             </p>
           </div>
 
