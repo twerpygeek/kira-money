@@ -271,9 +271,18 @@ export const storage = {
 
         const currency = validCurrencies.includes(currencyRaw) ? currencyRaw as Currency : 'USD';
 
-        const isLiability = typeRaw.includes('liability') || typeRaw.includes('debt') || 
-                           typeRaw.includes('loan') || typeRaw.includes('credit') || 
-                           value < 0 || validLiabilityCategories.includes(categoryRaw);
+        // Check Type column first - it takes priority
+        const isAssetType = typeRaw.includes('asset');
+        const isLiabilityType = typeRaw.includes('liability') || typeRaw.includes('debt');
+        
+        // Only fall back to other heuristics if Type column is unclear
+        const isLiability = isLiabilityType || 
+                           (!isAssetType && (
+                             typeRaw.includes('loan') || 
+                             typeRaw.includes('credit') || 
+                             value < 0 ||
+                             (categoryRaw !== 'other' && validLiabilityCategories.includes(categoryRaw))
+                           ));
 
         if (isLiability) {
           const category = validLiabilityCategories.includes(categoryRaw) ? categoryRaw : 'other';
