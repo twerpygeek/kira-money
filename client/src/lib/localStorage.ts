@@ -223,8 +223,18 @@ export const storage = {
 
   importCSV(csvString: string): { assets: number; liabilities: number } | null {
     try {
-      const lines = csvString.trim().split('\n');
+      let lines = csvString.trim().split('\n');
       if (lines.length < 2) return null;
+
+      // Handle case where entire row is wrapped in quotes (common Excel/Sheets export issue)
+      lines = lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('"') && trimmed.endsWith('"') && !trimmed.slice(1, -1).includes('","')) {
+          // Entire row is one quoted string - unwrap it
+          return trimmed.slice(1, -1);
+        }
+        return trimmed;
+      });
 
       const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
       
