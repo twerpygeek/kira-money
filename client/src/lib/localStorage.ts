@@ -1,5 +1,15 @@
 import type { Asset, Liability, Settings, HistorySnapshot, Currency, Goal, Insight, OwnershipType } from "@shared/schema";
-import { convertToBaseCurrency } from "@shared/schema";
+import { convertToBaseCurrency as staticConvert } from "@shared/schema";
+import { convertToBase, initializeRates, getCachedRateInfo } from "./currencyService";
+
+// Use dynamic rates if available, otherwise fall back to static
+function convertToBaseCurrency(amount: number, fromCurrency: Currency, toCurrency: Currency): number {
+  try {
+    return convertToBase(amount, fromCurrency, toCurrency);
+  } catch {
+    return staticConvert(amount, fromCurrency, toCurrency);
+  }
+}
 
 const STORAGE_KEYS = {
   ASSETS: "kira_assets",

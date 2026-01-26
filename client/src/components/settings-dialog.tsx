@@ -30,8 +30,9 @@ import {
 import { currencies, currencySymbols, type Currency, type Settings } from "@shared/schema";
 import { storage } from "@/lib/localStorage";
 import { useState, useEffect } from "react";
-import { Loader2, Download, Upload, Trash2, FileSpreadsheet, FileDown } from "lucide-react";
+import { Loader2, Download, Upload, Trash2, FileSpreadsheet, FileDown, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getCachedRateInfo, fetchExchangeRates, refreshCachedRates } from "@/lib/currencyService";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -54,17 +55,44 @@ export function SettingsDialog({
   const [baseCurrency, setBaseCurrency] = useState<Currency>(settings.baseCurrency);
   const [userName, setUserName] = useState(settings.userName || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [rateInfo, setRateInfo] = useState<{ lastUpdated: string; baseCurrency: string } | null>(null);
+  const [isRefreshingRates, setIsRefreshingRates] = useState(false);
 
   useEffect(() => {
     if (open) {
       setBaseCurrency(settings.baseCurrency);
       setUserName(settings.userName || "");
+      setRateInfo(getCachedRateInfo());
     }
   }, [open, settings]);
+
+  const handleRefreshRates = async () => {
+    setIsRefreshingRates(true);
+    try {
+      await fetchExchangeRates(baseCurrency);
+      refreshCachedRates(); // Sync in-memory cache with localStorage
+      setRateInfo(getCachedRateInfo());
+      toast({ title: "Exchange rates updated successfully" });
+    } catch (error) {
+      toast({ title: "Failed to update exchange rates", variant: "destructive" });
+    } finally {
+      setIsRefreshingRates(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // If base currency changed, fetch new rates for the new base
+      if (baseCurrency !== settings.baseCurrency) {
+        try {
+          await fetchExchangeRates(baseCurrency);
+          refreshCachedRates();
+        } catch {
+          // Fallback rates will be used if API fails
+        }
+      }
+      
       await onSave({
         ...settings,
         baseCurrency,
@@ -195,6 +223,34 @@ export function SettingsDialog({
             </Select>
             <p className="text-xs text-muted-foreground">
               All values will be converted to this currency for display
+            </p>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/30">
+              <div className="space-y-0.5">
+                <p className="text-xs font-medium">Exchange Rates</p>
+                <p className="text-xs text-muted-foreground">
+                  {rateInfo 
+                    ? `Last updated: ${new Date(rateInfo.lastUpdated).toLocaleDateString()}`
+                    : "Not yet fetched"}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshRates}
+                disabled={isRefreshingRates}
+                data-testid="button-refresh-rates"
+              >
+                {isRefreshingRates ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3 w-3" />
+                )}
+                <span className="ml-1.5">Refresh</span>
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Rates from European Central Bank, updated daily
             </p>
           </div>
 

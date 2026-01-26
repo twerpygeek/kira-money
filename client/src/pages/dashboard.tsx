@@ -29,10 +29,10 @@ import {
   type Goal,
   type Insight,
   type OwnershipType,
-  convertToBaseCurrency,
   currencySymbols,
   ownershipLabels,
 } from "@shared/schema";
+import { convertToBase as convertToBaseCurrency } from "@/lib/currencyService";
 import {
   Plus,
   Settings as SettingsIcon,
@@ -96,9 +96,17 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    refreshData();
-    setIsLoading(false);
-  }, [refreshData]);
+    const initApp = async () => {
+      refreshData();
+      // Initialize exchange rates from API
+      const { initializeRates } = await import("@/lib/currencyService");
+      await initializeRates(settings.baseCurrency || "USD");
+      // Refresh data again to use updated rates
+      refreshData();
+      setIsLoading(false);
+    };
+    initApp();
+  }, [refreshData, settings.baseCurrency]);
 
   const baseCurrency = settings.baseCurrency || "USD";
   const isPrivate = settings.privacyMode || false;

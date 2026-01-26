@@ -150,3 +150,5 @@ USD, EUR, GBP, JPY, CNY, SGD, MYR, AUD, CAD, CHF, INR
 - Implemented Ownership filtering (Mine/Partner/Shared)
 - Added recurring bill support with payment day tracking
 - Fixed CSV import to properly handle Type column priority
+- Integrated live currency exchange rates from Frankfurter API (European Central Bank data)
+- Added Vercel and Netlify deployment configuration files
