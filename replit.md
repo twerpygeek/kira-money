@@ -21,6 +21,13 @@ KIRA is a privacy-first, manual-entry net worth tracker inspired by "Worth It" a
 - **Privacy Mode**: Blur sensitive financial data when in public
 - **Dark/Light Theme**: Beautiful dark mode design with light mode option
 - **Mobile-First Design**: Optimized for mobile viewing
+- **Savings Goals**: Create and track financial goals with progress visualization
+- **Weekly Recap**: Summary of net worth changes, top categories, and upcoming bills
+- **Smart Insights**: Automated alerts for milestones, significant changes, and tips
+- **Cash Flow Chart**: 6-month visualization of assets, liabilities, and net worth trends
+- **Bill Calendar**: Track recurring bills with due date tracking
+- **Ownership Tracking**: Tag accounts as "Mine", "Partner's", or "Shared" for couples
+- **Recurring Bills**: Mark accounts as recurring with specific payment dates
 
 ## Tech Stack
 - **Frontend**: React + TypeScript + Vite
@@ -46,7 +53,12 @@ client/
 │   │   ├── account-item.tsx
 │   │   ├── add-transaction-dialog.tsx
 │   │   ├── allocation-chart.tsx
-│   │   └── settings-dialog.tsx
+│   │   ├── settings-dialog.tsx
+│   │   ├── goals-card.tsx        # Savings goals with progress tracking
+│   │   ├── weekly-recap.tsx      # Weekly summary card
+│   │   ├── insights-panel.tsx    # Smart insights and alerts
+│   │   ├── cash-flow-chart.tsx   # 6-month trend visualization
+│   │   └── bill-calendar.tsx     # Recurring bills tracker
 │   ├── lib/
 │   │   └── localStorage.ts  # Local storage CRUD utilities
 │   ├── pages/
@@ -77,6 +89,8 @@ All data is stored locally in the user's browser for maximum privacy:
 - `kira_liabilities` - Array of liability objects
 - `kira_settings` - User settings (baseCurrency, privacyMode, userName)
 - `kira_history` - Net worth history snapshots
+- `kira_goals` - Array of savings goal objects
+- `kira_insights` - Array of smart insight notifications
 
 ### Data Management Features
 - **Backup Data**: Download all data as JSON file
@@ -85,10 +99,16 @@ All data is stored locally in the user's browser for maximum privacy:
 
 ## Data Models
 ### Asset
-- id, name, value, category (cash, stocks, crypto, property, vehicles, retirement, other), currency, createdAt, updatedAt
+- id, name, value, category (cash, stocks, crypto, property, vehicles, retirement, other), currency, createdAt, updatedAt, notes, ownership (personal/partner/shared), isRecurring, recurringDay, previousValue
 
 ### Liability
-- id, name, value, category (credit_card, mortgage, personal_loan, student_loan, car_loan, other), currency, createdAt, updatedAt
+- id, name, value, category (credit_card, mortgage, personal_loan, student_loan, car_loan, other), currency, createdAt, updatedAt, notes, ownership (personal/partner/shared), isRecurring, recurringDay, previousValue
+
+### Goal
+- id, name, targetAmount, currentAmount, currency, icon, color, deadline, linkedAccountIds, createdAt, updatedAt
+
+### Insight
+- id, type (milestone/change/tip), title, message, createdAt, read
 
 ### Settings
 - baseCurrency, userName, privacyMode
@@ -122,3 +142,11 @@ USD, EUR, GBP, JPY, CNY, SGD, MYR, AUD, CAD, CHF, INR
 - Implemented asset grouping (liquid/illiquid)
 - Full-screen mobile modal with calculator-style input
 - Enhanced visual hierarchy with tabular-nums and tracking-tight
+- Added Savings Goals with progress bars, icons, colors, and deadlines
+- Implemented Weekly Recap showing net worth change and top categories
+- Created Smart Insights panel with automated alerts and tips
+- Built Cash Flow Chart with 6-month trend visualization
+- Added Bill Calendar for recurring payments tracking
+- Implemented Ownership filtering (Mine/Partner/Shared)
+- Added recurring bill support with payment day tracking
+- Fixed CSV import to properly handle Type column priority

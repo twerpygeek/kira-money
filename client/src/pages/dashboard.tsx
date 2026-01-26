@@ -13,6 +13,11 @@ import { AccountItem } from "@/components/account-item";
 import { AddTransactionDialog } from "@/components/add-transaction-dialog";
 import { AllocationChart } from "@/components/allocation-chart";
 import { SettingsDialog } from "@/components/settings-dialog";
+import { GoalsCard } from "@/components/goals-card";
+import { WeeklyRecap } from "@/components/weekly-recap";
+import { InsightsPanel } from "@/components/insights-panel";
+import { CashFlowChart } from "@/components/cash-flow-chart";
+import { BillCalendar } from "@/components/bill-calendar";
 import { useToast } from "@/hooks/use-toast";
 import { storage } from "@/lib/localStorage";
 import {
@@ -21,8 +26,12 @@ import {
   type HistorySnapshot,
   type Settings,
   type Currency,
+  type Goal,
+  type Insight,
+  type OwnershipType,
   convertToBaseCurrency,
   currencySymbols,
+  ownershipLabels,
 } from "@shared/schema";
 import {
   Plus,
@@ -31,6 +40,9 @@ import {
   Wallet,
   PieChart,
   Target,
+  User,
+  Users,
+  Heart,
 } from "lucide-react";
 import kiraLogo from "@assets/image_1769091105203.png";
 
@@ -66,12 +78,21 @@ export default function Dashboard() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [liabilities, setLiabilities] = useState<Liability[]>([]);
   const [history, setHistory] = useState<HistorySnapshot[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [recap, setRecap] = useState<ReturnType<typeof storage.getRecap> | null>(null);
+  const [cashFlow, setCashFlow] = useState<ReturnType<typeof storage.getCashFlow>>([]);
+  const [ownershipFilter, setOwnershipFilter] = useState<OwnershipType | "all">("all");
 
   const refreshData = useCallback(() => {
     setSettings(storage.getSettings());
     setAssets(storage.getAssets());
     setLiabilities(storage.getLiabilities());
     setHistory(storage.getHistory());
+    setGoals(storage.getGoals());
+    setInsights(storage.getInsights());
+    setRecap(storage.getRecap());
+    setCashFlow(storage.getCashFlow());
   }, []);
 
   useEffect(() => {
@@ -98,28 +119,36 @@ export default function Dashboard() {
   const liquidCategories = ["cash", "stocks", "crypto"];
   const illiquidCategories = ["property", "vehicles", "retirement", "other"];
 
-  const liquidAssets = assets.filter((a) => liquidCategories.includes(a.category));
-  const illiquidAssets = assets.filter((a) => illiquidCategories.includes(a.category));
+  const filterByOwnership = <T extends { ownership?: OwnershipType }>(items: T[]): T[] => {
+    if (ownershipFilter === "all") return items;
+    return items.filter((item) => item.ownership === ownershipFilter || !item.ownership);
+  };
 
-  const handleAddAsset = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+  const filteredAssets = filterByOwnership(assets);
+  const filteredLiabilities = filterByOwnership(liabilities);
+
+  const liquidAssets = filteredAssets.filter((a) => liquidCategories.includes(a.category));
+  const illiquidAssets = filteredAssets.filter((a) => illiquidCategories.includes(a.category));
+
+  const handleAddAsset = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.addAsset(data);
     refreshData();
     toast({ title: "Asset added successfully" });
   };
 
-  const handleAddLiability = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+  const handleAddLiability = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.addLiability(data);
     refreshData();
     toast({ title: "Liability added successfully" });
   };
 
-  const handleUpdateAsset = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+  const handleUpdateAsset = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.updateAsset(id, data);
     refreshData();
     toast({ title: "Asset updated successfully" });
   };
 
-  const handleUpdateLiability = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => {
+  const handleUpdateLiability = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.updateLiability(id, data);
     refreshData();
     toast({ title: "Liability updated successfully" });
@@ -257,6 +286,14 @@ export default function Dashboard() {
               userName={userName}
             />
 
+            {recap && (
+              <WeeklyRecap
+                recap={recap}
+                baseCurrency={baseCurrency}
+                isPrivate={isPrivate}
+              />
+            )}
+
             <Card className="rounded-2xl border-border/50" data-testid="card-milestone">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -274,6 +311,13 @@ export default function Dashboard() {
                 </p>
               </CardContent>
             </Card>
+
+            <GoalsCard
+              goals={goals}
+              baseCurrency={baseCurrency}
+              isPrivate={isPrivate}
+              onRefresh={refreshData}
+            />
 
             <Card className="rounded-2xl border-border/50">
               <CardHeader className="pb-2">
@@ -297,13 +341,57 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
-            {assets.length === 0 && liabilities.length === 0 ? (
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <Button
+                variant={ownershipFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setOwnershipFilter("all")}
+                className="rounded-full"
+                data-testid="filter-all"
+              >
+                All
+              </Button>
+              <Button
+                variant={ownershipFilter === "personal" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setOwnershipFilter("personal")}
+                className="rounded-full"
+                data-testid="filter-personal"
+              >
+                <User className="h-3 w-3 mr-1" />
+                Mine
+              </Button>
+              <Button
+                variant={ownershipFilter === "partner" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setOwnershipFilter("partner")}
+                className="rounded-full"
+                data-testid="filter-partner"
+              >
+                <Heart className="h-3 w-3 mr-1" />
+                Partner
+              </Button>
+              <Button
+                variant={ownershipFilter === "shared" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setOwnershipFilter("shared")}
+                className="rounded-full"
+                data-testid="filter-shared"
+              >
+                <Users className="h-3 w-3 mr-1" />
+                Shared
+              </Button>
+            </div>
+
+            {filteredAssets.length === 0 && filteredLiabilities.length === 0 ? (
               <Card className="rounded-2xl">
                 <CardContent className="py-12 text-center">
                   <Wallet className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No accounts yet</h3>
+                  <h3 className="text-lg font-medium mb-2">
+                    {ownershipFilter === "all" ? "No accounts yet" : `No ${ownershipLabels[ownershipFilter as OwnershipType]} accounts`}
+                  </h3>
                   <p className="text-muted-foreground mb-4">
-                    Add your first asset or liability to start tracking your net worth
+                    {ownershipFilter === "all" ? "Add your first asset or liability to start tracking your net worth" : "Try a different filter or add new accounts"}
                   </p>
                   <Button onClick={() => setAddDialogOpen(true)} className="gradient-primary" data-testid="button-add-first">
                     <Plus className="h-4 w-4 mr-2" />
@@ -357,14 +445,14 @@ export default function Dashboard() {
                   </div>
                 )}
 
-                {liabilities.length > 0 && (
+                {filteredLiabilities.length > 0 && (
                   <div className="space-y-3">
                     <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                       Liabilities
                     </h2>
                     <div className="space-y-2">
-                      {liabilities.map((liability) => (
+                      {filteredLiabilities.map((liability) => (
                         <AccountItem
                           key={liability.id}
                           item={liability}
@@ -402,8 +490,26 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="insights" className="space-y-6">
+            <InsightsPanel
+              insights={insights}
+              onRefresh={refreshData}
+            />
+
+            <CashFlowChart
+              data={cashFlow}
+              baseCurrency={baseCurrency}
+              isPrivate={isPrivate}
+            />
+
             <AllocationChart
               assets={assets}
+              baseCurrency={baseCurrency}
+              isPrivate={isPrivate}
+            />
+
+            <BillCalendar
+              assets={assets}
+              liabilities={liabilities}
               baseCurrency={baseCurrency}
               isPrivate={isPrivate}
             />
@@ -428,6 +534,10 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center py-2 border-b border-border/50">
                   <span className="text-sm text-muted-foreground">Total Liabilities</span>
                   <span className="font-medium tabular-nums">{liabilities.length}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-border/50">
+                  <span className="text-sm text-muted-foreground">Goals</span>
+                  <span className="font-medium tabular-nums">{goals.length}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm text-muted-foreground">History Snapshots</span>

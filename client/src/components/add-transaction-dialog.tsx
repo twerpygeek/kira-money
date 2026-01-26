@@ -28,6 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   assetCategories,
   liabilityCategories,
@@ -35,11 +37,14 @@ import {
   assetCategoryLabels,
   liabilityCategoryLabels,
   currencySymbols,
+  ownershipTypes,
+  ownershipLabels,
   type Currency,
   type Asset,
   type Liability,
+  type OwnershipType,
 } from "@shared/schema";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, User, Users, Heart, Calendar } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -50,6 +55,9 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required"),
   currency: z.enum(currencies),
   notes: z.string().optional(),
+  ownership: z.enum(ownershipTypes).optional(),
+  isRecurring: z.boolean().optional(),
+  recurringDay: z.number().min(1).max(31).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -57,13 +65,13 @@ type FormData = z.infer<typeof formSchema>;
 interface AddTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddAsset: (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
-  onAddLiability: (data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
+  onAddAsset: (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
+  onAddLiability: (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
   baseCurrency: Currency;
   editItem?: Asset | Liability | null;
   editType?: "asset" | "liability";
-  onEditAsset?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
-  onEditLiability?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string }) => Promise<void>;
+  onEditAsset?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
+  onEditLiability?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
 }
 
 export function AddTransactionDialog({
@@ -88,6 +96,9 @@ export function AddTransactionDialog({
       category: "",
       currency: baseCurrency,
       notes: "",
+      ownership: "personal",
+      isRecurring: false,
+      recurringDay: undefined,
     },
   });
 
@@ -104,6 +115,9 @@ export function AddTransactionDialog({
           category: editItem.category,
           currency: editItem.currency,
           notes: editItem.notes || "",
+          ownership: editItem.ownership || "personal",
+          isRecurring: editItem.isRecurring || false,
+          recurringDay: editItem.recurringDay,
         });
       } else {
         setType("asset");
@@ -113,6 +127,9 @@ export function AddTransactionDialog({
           category: "",
           currency: baseCurrency,
           notes: "",
+          ownership: "personal",
+          isRecurring: false,
+          recurringDay: undefined,
         });
       }
     }
@@ -129,6 +146,9 @@ export function AddTransactionDialog({
         category: data.category,
         currency: data.currency as Currency,
         notes: data.notes || undefined,
+        ownership: data.ownership as OwnershipType,
+        isRecurring: data.isRecurring,
+        recurringDay: data.isRecurring ? data.recurringDay : undefined,
       };
 
       if (isEditing && editItem) {
@@ -151,6 +171,9 @@ export function AddTransactionDialog({
         category: "",
         currency: baseCurrency,
         notes: "",
+        ownership: "personal",
+        isRecurring: false,
+        recurringDay: undefined,
       });
       onOpenChange(false);
     } finally {
@@ -356,6 +379,90 @@ export function AddTransactionDialog({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="ownership"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Ownership</FormLabel>
+                    <div className="flex gap-2">
+                      {ownershipTypes.map((ownerType) => {
+                        const Icon = ownerType === "personal" ? User : ownerType === "partner" ? Heart : Users;
+                        return (
+                          <button
+                            key={ownerType}
+                            type="button"
+                            onClick={() => field.onChange(ownerType)}
+                            className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                              field.value === ownerType
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border hover:border-primary/50"
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span className="text-sm font-medium">{ownershipLabels[ownerType]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isRecurring"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between p-3 rounded-xl border border-border">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <FormLabel className="text-sm font-medium">Recurring</FormLabel>
+                        <p className="text-xs text-muted-foreground">Repeats monthly on a specific day</p>
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="switch-recurring"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("isRecurring") && (
+                <FormField
+                  control={form.control}
+                  name="recurringDay"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide">Day of Month</FormLabel>
+                      <Select
+                        onValueChange={(v) => field.onChange(parseInt(v))}
+                        value={field.value?.toString() || ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-recurring-day">
+                            <SelectValue placeholder="Select day" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                            <SelectItem key={day} value={day.toString()}>
+                              {day}{day === 1 ? "st" : day === 2 ? "nd" : day === 3 ? "rd" : "th"}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <Button
                 type="submit"

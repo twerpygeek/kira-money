@@ -1,4 +1,4 @@
-import type { Asset, Liability, Settings, HistorySnapshot, Currency } from "@shared/schema";
+import type { Asset, Liability, Settings, HistorySnapshot, Currency, Goal, Insight, OwnershipType } from "@shared/schema";
 import { convertToBaseCurrency } from "@shared/schema";
 
 const STORAGE_KEYS = {
@@ -6,12 +6,18 @@ const STORAGE_KEYS = {
   LIABILITIES: "kira_liabilities",
   SETTINGS: "kira_settings",
   HISTORY: "kira_history",
+  GOALS: "kira_goals",
+  INSIGHTS: "kira_insights",
+  TAGS: "kira_tags",
 };
 
 const defaultSettings: Settings = {
   baseCurrency: "USD",
   privacyMode: false,
   userName: "",
+  partnerName: "",
+  showInsights: true,
+  defaultOwnership: "personal",
 };
 
 function generateId(): string {
@@ -36,7 +42,7 @@ export const storage = {
     localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(assets));
   },
 
-  addAsset(data: { name: string; value: number; category: string; currency: Currency; notes?: string }): Asset {
+  addAsset(data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }): Asset {
     const assets = this.getAssets();
     const now = new Date().toISOString();
     const newAsset: Asset = {
@@ -46,27 +52,35 @@ export const storage = {
       category: data.category as Asset["category"],
       currency: data.currency,
       notes: data.notes,
+      tags: data.tags || [],
+      ownership: data.ownership || this.getSettings().defaultOwnership || "personal",
+      isRecurring: data.isRecurring,
+      recurringDay: data.recurringDay,
       createdAt: now,
       updatedAt: now,
     };
     assets.push(newAsset);
     this.setAssets(assets);
     this.updateHistory();
+    this.checkInsights();
     return newAsset;
   },
 
-  updateAsset(id: string, data: { name?: string; value?: number; category?: string; currency?: Currency; notes?: string }): Asset | null {
+  updateAsset(id: string, data: { name?: string; value?: number; category?: string; currency?: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }): Asset | null {
     const assets = this.getAssets();
     const index = assets.findIndex((a) => a.id === id);
     if (index === -1) return null;
+    const previousValue = assets[index].value;
     assets[index] = {
       ...assets[index],
       ...data,
       category: (data.category as Asset["category"]) || assets[index].category,
+      previousValue,
       updatedAt: new Date().toISOString(),
     };
     this.setAssets(assets);
     this.updateHistory();
+    this.checkInsights();
     return assets[index];
   },
 
@@ -87,7 +101,7 @@ export const storage = {
     localStorage.setItem(STORAGE_KEYS.LIABILITIES, JSON.stringify(liabilities));
   },
 
-  addLiability(data: { name: string; value: number; category: string; currency: Currency; notes?: string }): Liability {
+  addLiability(data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }): Liability {
     const liabilities = this.getLiabilities();
     const now = new Date().toISOString();
     const newLiability: Liability = {
@@ -97,27 +111,35 @@ export const storage = {
       category: data.category as Liability["category"],
       currency: data.currency,
       notes: data.notes,
+      tags: data.tags || [],
+      ownership: data.ownership || this.getSettings().defaultOwnership || "personal",
+      isRecurring: data.isRecurring,
+      recurringDay: data.recurringDay,
       createdAt: now,
       updatedAt: now,
     };
     liabilities.push(newLiability);
     this.setLiabilities(liabilities);
     this.updateHistory();
+    this.checkInsights();
     return newLiability;
   },
 
-  updateLiability(id: string, data: { name?: string; value?: number; category?: string; currency?: Currency; notes?: string }): Liability | null {
+  updateLiability(id: string, data: { name?: string; value?: number; category?: string; currency?: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }): Liability | null {
     const liabilities = this.getLiabilities();
     const index = liabilities.findIndex((l) => l.id === id);
     if (index === -1) return null;
+    const previousValue = liabilities[index].value;
     liabilities[index] = {
       ...liabilities[index],
       ...data,
       category: (data.category as Liability["category"]) || liabilities[index].category,
+      previousValue,
       updatedAt: new Date().toISOString(),
     };
     this.setLiabilities(liabilities);
     this.updateHistory();
+    this.checkInsights();
     return liabilities[index];
   },
 
@@ -190,11 +212,272 @@ export const storage = {
     this.setHistory(history);
   },
 
+  // Goals CRUD
+  getGoals(): Goal[] {
+    return safeJsonParse(localStorage.getItem(STORAGE_KEYS.GOALS), []);
+  },
+
+  setGoals(goals: Goal[]): void {
+    localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals));
+  },
+
+  addGoal(data: { name: string; targetAmount: number; currentAmount: number; currency: Currency; deadline?: string; linkedAccountIds?: string[]; icon?: string; color?: string }): Goal {
+    const goals = this.getGoals();
+    const now = new Date().toISOString();
+    const newGoal: Goal = {
+      id: generateId(),
+      name: data.name,
+      targetAmount: data.targetAmount,
+      currentAmount: data.currentAmount,
+      currency: data.currency,
+      deadline: data.deadline,
+      linkedAccountIds: data.linkedAccountIds || [],
+      icon: data.icon || "piggy-bank",
+      color: data.color || "#10B981",
+      createdAt: now,
+      updatedAt: now,
+    };
+    goals.push(newGoal);
+    this.setGoals(goals);
+    return newGoal;
+  },
+
+  updateGoal(id: string, data: Partial<Omit<Goal, "id" | "createdAt" | "updatedAt">>): Goal | null {
+    const goals = this.getGoals();
+    const index = goals.findIndex((g) => g.id === id);
+    if (index === -1) return null;
+    goals[index] = {
+      ...goals[index],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    this.setGoals(goals);
+    return goals[index];
+  },
+
+  deleteGoal(id: string): boolean {
+    const goals = this.getGoals();
+    const filtered = goals.filter((g) => g.id !== id);
+    if (filtered.length === goals.length) return false;
+    this.setGoals(filtered);
+    return true;
+  },
+
+  // Insights CRUD
+  getInsights(): Insight[] {
+    return safeJsonParse(localStorage.getItem(STORAGE_KEYS.INSIGHTS), []);
+  },
+
+  setInsights(insights: Insight[]): void {
+    localStorage.setItem(STORAGE_KEYS.INSIGHTS, JSON.stringify(insights));
+  },
+
+  addInsight(data: { type: Insight["type"]; title: string; message: string; data?: Record<string, any> }): Insight {
+    const insights = this.getInsights();
+    const newInsight: Insight = {
+      id: generateId(),
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      isRead: false,
+      data: data.data,
+      createdAt: new Date().toISOString(),
+    };
+    insights.unshift(newInsight);
+    // Keep only last 50 insights
+    if (insights.length > 50) insights.pop();
+    this.setInsights(insights);
+    return newInsight;
+  },
+
+  markInsightRead(id: string): void {
+    const insights = this.getInsights();
+    const insight = insights.find((i) => i.id === id);
+    if (insight) {
+      insight.isRead = true;
+      this.setInsights(insights);
+    }
+  },
+
+  markAllInsightsRead(): void {
+    const insights = this.getInsights();
+    insights.forEach((i) => (i.isRead = true));
+    this.setInsights(insights);
+  },
+
+  clearInsights(): void {
+    this.setInsights([]);
+  },
+
+  // Tags management
+  getTags(): string[] {
+    return safeJsonParse(localStorage.getItem(STORAGE_KEYS.TAGS), []);
+  },
+
+  setTags(tags: string[]): void {
+    localStorage.setItem(STORAGE_KEYS.TAGS, JSON.stringify(tags));
+  },
+
+  addTag(tag: string): void {
+    const tags = this.getTags();
+    if (!tags.includes(tag)) {
+      tags.push(tag);
+      this.setTags(tags);
+    }
+  },
+
+  removeTag(tag: string): void {
+    const tags = this.getTags().filter((t) => t !== tag);
+    this.setTags(tags);
+  },
+
+  // Check and generate insights based on financial changes
+  checkInsights(): void {
+    const settings = this.getSettings();
+    if (!settings.showInsights) return;
+
+    const history = this.getHistory();
+    const assets = this.getAssets();
+    const liabilities = this.getLiabilities();
+
+    if (history.length < 2) return;
+
+    const latest = history[history.length - 1];
+    const previous = history[history.length - 2];
+    const netWorthChange = latest.netWorth - previous.netWorth;
+    const percentChange = previous.netWorth !== 0 ? (netWorthChange / Math.abs(previous.netWorth)) * 100 : 0;
+
+    // Check for significant net worth changes (>5%)
+    if (Math.abs(percentChange) >= 5) {
+      const direction = netWorthChange > 0 ? "increased" : "decreased";
+      this.addInsight({
+        type: netWorthChange > 0 ? "milestone" : "warning",
+        title: `Net Worth ${netWorthChange > 0 ? "Up" : "Down"} ${Math.abs(percentChange).toFixed(1)}%`,
+        message: `Your net worth has ${direction} by ${settings.baseCurrency} ${Math.abs(netWorthChange).toLocaleString()}`,
+        data: { change: netWorthChange, percent: percentChange },
+      });
+    }
+
+    // Check milestones (every $10k, $25k, $50k, $100k, etc.)
+    const milestones = [10000, 25000, 50000, 100000, 250000, 500000, 1000000];
+    for (const milestone of milestones) {
+      if (previous.netWorth < milestone && latest.netWorth >= milestone) {
+        this.addInsight({
+          type: "milestone",
+          title: `Milestone Reached!`,
+          message: `Congratulations! You've reached ${settings.baseCurrency} ${milestone.toLocaleString()} net worth!`,
+          data: { milestone },
+        });
+        break;
+      }
+    }
+
+    // Check debt reduction
+    if (latest.totalLiabilities < previous.totalLiabilities) {
+      const reduction = previous.totalLiabilities - latest.totalLiabilities;
+      if (reduction >= 100) {
+        this.addInsight({
+          type: "tip",
+          title: "Debt Reduced",
+          message: `Great job! You've reduced your debt by ${settings.baseCurrency} ${reduction.toLocaleString()}`,
+          data: { reduction },
+        });
+      }
+    }
+  },
+
+  // Get weekly/monthly recap data
+  getRecap(): { netWorthChange: number; percentChange: number; topCategories: { name: string; value: number }[]; totalAssets: number; totalLiabilities: number; upcomingBills: (Asset | Liability)[]; daysUntilNextBill: number | null } {
+    const history = this.getHistory();
+    const assets = this.getAssets();
+    const liabilities = this.getLiabilities();
+    const settings = this.getSettings();
+
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weekAgoStr = weekAgo.toISOString().split("T")[0];
+
+    const currentSnapshot = history[history.length - 1];
+    const weekAgoSnapshot = history.find((h) => h.date <= weekAgoStr) || history[0];
+
+    const netWorthChange = currentSnapshot ? (currentSnapshot.netWorth - (weekAgoSnapshot?.netWorth || 0)) : 0;
+    const percentChange = weekAgoSnapshot?.netWorth ? (netWorthChange / Math.abs(weekAgoSnapshot.netWorth)) * 100 : 0;
+
+    // Group assets by category
+    const categoryTotals: Record<string, number> = {};
+    assets.forEach((a) => {
+      const value = convertToBaseCurrency(a.value, a.currency, settings.baseCurrency);
+      categoryTotals[a.category] = (categoryTotals[a.category] || 0) + value;
+    });
+
+    const topCategories = Object.entries(categoryTotals)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    const totalAssets = currentSnapshot?.totalAssets || 0;
+    const totalLiabilities = currentSnapshot?.totalLiabilities || 0;
+
+    // Get upcoming recurring bills
+    const currentDay = now.getDate();
+    const allItems = [...assets, ...liabilities].filter((item) => item.isRecurring && item.recurringDay);
+    const upcomingBills = allItems
+      .filter((item) => item.recurringDay && item.recurringDay >= currentDay)
+      .sort((a, b) => (a.recurringDay || 0) - (b.recurringDay || 0))
+      .slice(0, 5);
+
+    const nextBill = upcomingBills[0];
+    const daysUntilNextBill = nextBill?.recurringDay ? nextBill.recurringDay - currentDay : null;
+
+    return {
+      netWorthChange,
+      percentChange,
+      topCategories,
+      totalAssets,
+      totalLiabilities,
+      upcomingBills,
+      daysUntilNextBill,
+    };
+  },
+
+  // Get cash flow data (changes over time)
+  getCashFlow(months: number = 6): { month: string; assets: number; liabilities: number; netWorth: number }[] {
+    const history = this.getHistory();
+    const settings = this.getSettings();
+
+    const now = new Date();
+    const result: { month: string; assets: number; liabilities: number; netWorth: number }[] = [];
+
+    for (let i = months - 1; i >= 0; i--) {
+      const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = targetDate.toISOString().slice(0, 7);
+      const monthName = targetDate.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
+      // Find the last snapshot for this month
+      const monthSnapshots = history.filter((h) => h.date.startsWith(monthStr));
+      const snapshot = monthSnapshots[monthSnapshots.length - 1];
+
+      if (snapshot) {
+        result.push({
+          month: monthName,
+          assets: snapshot.totalAssets,
+          liabilities: snapshot.totalLiabilities,
+          netWorth: snapshot.netWorth,
+        });
+      }
+    }
+
+    return result;
+  },
+
   clearAllData(): void {
     localStorage.removeItem(STORAGE_KEYS.ASSETS);
     localStorage.removeItem(STORAGE_KEYS.LIABILITIES);
     localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     localStorage.removeItem(STORAGE_KEYS.HISTORY);
+    localStorage.removeItem(STORAGE_KEYS.GOALS);
+    localStorage.removeItem(STORAGE_KEYS.INSIGHTS);
+    localStorage.removeItem(STORAGE_KEYS.TAGS);
   },
 
   exportData(): string {
@@ -203,6 +486,9 @@ export const storage = {
       liabilities: this.getLiabilities(),
       settings: this.getSettings(),
       history: this.getHistory(),
+      goals: this.getGoals(),
+      insights: this.getInsights(),
+      tags: this.getTags(),
       exportedAt: new Date().toISOString(),
     };
     return JSON.stringify(data, null, 2);
@@ -215,6 +501,9 @@ export const storage = {
       if (data.liabilities) this.setLiabilities(data.liabilities);
       if (data.settings) this.setSettings(data.settings);
       if (data.history) this.setHistory(data.history);
+      if (data.goals) this.setGoals(data.goals);
+      if (data.insights) this.setInsights(data.insights);
+      if (data.tags) this.setTags(data.tags);
       return true;
     } catch {
       return false;
