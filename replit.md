@@ -152,3 +152,5 @@ USD, EUR, GBP, JPY, CNY, SGD, MYR, AUD, CAD, CHF, INR
 - Fixed CSV import to properly handle Type column priority
 - Integrated live currency exchange rates from Frankfurter API (European Central Bank data)
 - Added Vercel and Netlify deployment configuration files
+- Added Tags system for assets and liabilities (comma-separated input, badge display)
+- Added Investment Performance tracking component for stocks, crypto, and retirement accounts

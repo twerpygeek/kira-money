@@ -44,7 +44,8 @@ import {
   type Liability,
   type OwnershipType,
 } from "@shared/schema";
-import { Loader2, X, User, Users, Heart, Calendar } from "lucide-react";
+import { Loader2, X, User, Users, Heart, Calendar, Tag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -55,6 +56,7 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required"),
   currency: z.enum(currencies),
   notes: z.string().optional(),
+  tags: z.string().optional(),
   ownership: z.enum(ownershipTypes).optional(),
   isRecurring: z.boolean().optional(),
   recurringDay: z.number().min(1).max(31).optional(),
@@ -65,13 +67,13 @@ type FormData = z.infer<typeof formSchema>;
 interface AddTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddAsset: (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
-  onAddLiability: (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
+  onAddAsset: (data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
+  onAddLiability: (data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
   baseCurrency: Currency;
   editItem?: Asset | Liability | null;
   editType?: "asset" | "liability";
-  onEditAsset?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
-  onEditLiability?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
+  onEditAsset?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
+  onEditLiability?: (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => Promise<void>;
 }
 
 export function AddTransactionDialog({
@@ -96,6 +98,7 @@ export function AddTransactionDialog({
       category: "",
       currency: baseCurrency,
       notes: "",
+      tags: "",
       ownership: "personal",
       isRecurring: false,
       recurringDay: undefined,
@@ -115,6 +118,7 @@ export function AddTransactionDialog({
           category: editItem.category,
           currency: editItem.currency,
           notes: editItem.notes || "",
+          tags: editItem.tags?.join(", ") || "",
           ownership: editItem.ownership || "personal",
           isRecurring: editItem.isRecurring || false,
           recurringDay: editItem.recurringDay,
@@ -127,6 +131,7 @@ export function AddTransactionDialog({
           category: "",
           currency: baseCurrency,
           notes: "",
+          tags: "",
           ownership: "personal",
           isRecurring: false,
           recurringDay: undefined,
@@ -140,12 +145,17 @@ export function AddTransactionDialog({
   const handleSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
+      const parsedTags = data.tags
+        ? data.tags.split(",").map(t => t.trim()).filter(t => t.length > 0)
+        : undefined;
+      
       const payload = {
         name: data.name,
         value: parseFloat(data.value),
         category: data.category,
         currency: data.currency as Currency,
         notes: data.notes || undefined,
+        tags: parsedTags && parsedTags.length > 0 ? parsedTags : undefined,
         ownership: data.ownership as OwnershipType,
         isRecurring: data.isRecurring,
         recurringDay: data.isRecurring ? data.recurringDay : undefined,
@@ -171,6 +181,7 @@ export function AddTransactionDialog({
         category: "",
         currency: baseCurrency,
         notes: "",
+        tags: "",
         ownership: "personal",
         isRecurring: false,
         recurringDay: undefined,
@@ -375,6 +386,28 @@ export function AddTransactionDialog({
                         data-testid="input-notes"
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                      <Tag className="h-3 w-3" />
+                      Tags (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter tags separated by commas (e.g., emergency, investment)"
+                        {...field}
+                        data-testid="input-tags"
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">Separate multiple tags with commas</p>
                     <FormMessage />
                   </FormItem>
                 )}

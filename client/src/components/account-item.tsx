@@ -22,9 +22,10 @@ import {
   type Currency,
   assetCategoryLabels,
   liabilityCategoryLabels,
-  convertToBaseCurrency,
 } from "@shared/schema";
+import { convertToBase as convertToBaseCurrency } from "@/lib/currencyService";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,6 +113,15 @@ export function AccountItem({
             <p className="text-xs text-muted-foreground/70 truncate mt-0.5" data-testid={`text-notes-${item.id}`}>
               {item.notes}
             </p>
+          )}
+          {item.tags && item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {item.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" data-testid={`badge-tag-${tag}`}>
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           )}
         </div>
       </div>

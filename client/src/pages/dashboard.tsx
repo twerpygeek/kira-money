@@ -16,6 +16,7 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import { GoalsCard } from "@/components/goals-card";
 import { WeeklyRecap } from "@/components/weekly-recap";
 import { InsightsPanel } from "@/components/insights-panel";
+import { InvestmentPerformance } from "@/components/investment-performance";
 import { CashFlowChart } from "@/components/cash-flow-chart";
 import { BillCalendar } from "@/components/bill-calendar";
 import { useToast } from "@/hooks/use-toast";
@@ -138,25 +139,25 @@ export default function Dashboard() {
   const liquidAssets = filteredAssets.filter((a) => liquidCategories.includes(a.category));
   const illiquidAssets = filteredAssets.filter((a) => illiquidCategories.includes(a.category));
 
-  const handleAddAsset = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
+  const handleAddAsset = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.addAsset(data);
     refreshData();
     toast({ title: "Asset added successfully" });
   };
 
-  const handleAddLiability = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
+  const handleAddLiability = async (data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.addLiability(data);
     refreshData();
     toast({ title: "Liability added successfully" });
   };
 
-  const handleUpdateAsset = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
+  const handleUpdateAsset = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.updateAsset(id, data);
     refreshData();
     toast({ title: "Asset updated successfully" });
   };
 
-  const handleUpdateLiability = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
+  const handleUpdateLiability = async (id: string, data: { name: string; value: number; category: string; currency: Currency; notes?: string; tags?: string[]; ownership?: OwnershipType; isRecurring?: boolean; recurringDay?: number }) => {
     storage.updateLiability(id, data);
     refreshData();
     toast({ title: "Liability updated successfully" });
@@ -501,6 +502,12 @@ export default function Dashboard() {
             <InsightsPanel
               insights={insights}
               onRefresh={refreshData}
+            />
+
+            <InvestmentPerformance
+              assets={assets}
+              baseCurrency={baseCurrency}
+              isPrivate={isPrivate}
             />
 
             <CashFlowChart
