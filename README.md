@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./preview.png" width="700" />
+  <img src="https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png" width="700" />
 </p>
 
 <h1 align="center">Kira Money</h1>
@@ -63,9 +63,7 @@ Just what actually matters.
 
 ## 🖼️ Preview
 
-> Add a screenshot or GIF here (highly recommended)
-
-![Kira Preview](./preview.png)
+![Kira Preview](https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png)
 
 ---
 
