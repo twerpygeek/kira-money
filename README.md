@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png" width="700" />
-</p>
-
 <h1 align="center">Kira Money</h1>
 
 <p align="center">
@@ -15,14 +11,18 @@
   <a href="#-contributing">Contribute</a>
 </p>
 
+<p align="center">
+  <img src="https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png" width="250" />
+</p>
+
 ---
 
 ## ⚠️ The Problem
 
 Most finance apps:
-- Track too much
-- Overcomplicate everything
-- Don’t actually change behavior
+- Track too much  
+- Overcomplicate everything  
+- Don’t actually change behavior  
 
 You end up logging numbers… without changing your life.
 
@@ -36,9 +36,9 @@ Kira is built on a simple belief:
 > They have a **clarity problem**.
 
 So instead of tracking everything, Kira focuses on:
-- Net worth (signal > noise)
-- Simplicity over features
-- Clear visibility → better decisions
+- Net worth (signal > noise)  
+- Simplicity over features  
+- Clear visibility → better decisions  
 
 ---
 
@@ -75,15 +75,13 @@ Just what actually matters.
 
 ## 🛠️ Tech Stack
 
-- Frontend: (fill this in — e.g. React / Next.js)
-- Styling: (e.g. Tailwind CSS)
-- Hosting: Netlify
+- Frontend: (fill this in — e.g. React / Next.js)  
+- Styling: (e.g. Tailwind CSS)  
+- Hosting: Netlify  
 
 ---
 
 ## 📦 Getting Started
-
-Clone the repo and run locally:
 
 ```bash
 git clone https://github.com/twerpygeek/kira-money.git
