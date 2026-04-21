@@ -50,7 +50,12 @@ No bloated dashboards.
 No unnecessary categories.  
 Just what actually matters.
 
+
 ---
+
+## 🎥 Demo
+
+[![Watch Kira Demo](https://img.youtube.com/vi/K6WquxhBqNY/0.jpg)](https://youtu.be/K6WquxhBqNY)
 
 ## 🚀 Features
 
