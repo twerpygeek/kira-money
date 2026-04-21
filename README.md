@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png" width="250" />
+  <img src="https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png" width="150" />
 </p>
 
 ---
@@ -58,12 +58,6 @@ Just what actually matters.
 - ⚡ Fast, minimal, and easy to use  
 - 🧩 Open-source and customizable  
 - 🧠 Built for awareness, not just tracking  
-
----
-
-## 🖼️ Preview
-
-![Kira Preview](https://kira-money.netlify.app/assets/image_1769091105203-f9_nzuMJ.png)
 
 ---
 
